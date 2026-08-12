@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: cnm-backend
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  flyway:
+    locations: classpath:db/migration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+
+server:
+  port: ${PORT:8080}
