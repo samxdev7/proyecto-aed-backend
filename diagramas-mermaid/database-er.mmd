@@ -1,0 +1,69 @@
+erDiagram
+    USUARIO ||--o{ ADMINISTRADOR : "es"
+    USUARIO ||--o{ CUIDADOR : "tiene"
+    USUARIO {
+        BIGINT id_usuario PK
+        VARCHAR(100) nombre
+        VARCHAR(150) email UK
+        VARCHAR(255) password_hash
+        ENUM('común','admin') tipo
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    ADMINISTRADOR {
+        BIGINT id_usuario PK,FK
+        VARCHAR(50) perfil_admin
+        TIMESTAMP created_at
+    }
+    CUIDADOR {
+        BIGINT id_cuidador PK
+        BIGINT id_usuario FK
+        VARCHAR(100) nombre
+        VARCHAR(20) telefono
+        VARCHAR(200) direccion
+        TIMESTAMP created_at
+    }
+    PACIENTE {
+        BIGINT id_paciente PK
+        BIGINT id_cuidador FK
+        VARCHAR(100) nombre
+        DATE fecha_nacimiento
+        ENUM('M','F','Otro') genero
+        TEXT antecedentes_medicos
+        TIMESTAMP created_at
+    }
+    CITA {
+        BIGINT id_cita PK
+        BIGINT id_paciente FK
+        BIGINT id_cuidador FK
+        TIMESTAMP fecha_hora
+        ENUM('programada','completada','cancelada') estado
+        TEXT notas
+        TIMESTAMP created_at
+    }
+    MEDICAMENTO {
+        BIGINT id_medicamento PK
+        BIGINT id_paciente FK
+        VARCHAR(100) nombre
+        VARCHAR(50) dosis
+        VARCHAR(50) frecuencia
+        TIMESTAMP hora_inicio
+        BOOLEAN activo
+        TIMESTAMP created_at
+    }
+    ALERTA {
+        BIGINT id_alerta PK
+        BIGINT id_medicamento FK
+        TIMESTAMP fecha_hora
+        ENUM('pendiente','enviada','fallida') estado
+        VARCHAR(20) canal
+        TIMESTAMP created_at
+    }
+    HISTORIAL_CLINICO {
+        BIGINT id_historial PK
+        BIGINT id_paciente FK
+        BIGINT id_cuidador FK
+        TEXT descripcion
+        TIMESTAMP fecha
+        TIMESTAMP created_at
+    }
