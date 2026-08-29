@@ -1,0 +1,150 @@
+erDiagram
+
+    %% ==================================================================
+    %% DIAGRAMA ENTIDAD-RELACIÓN
+    %% Sistema web de gestión de inscripciones de actividades montañistas
+    %% para el Club Nicaragüense de Montañismo (CNM)
+    %% ·
+    %% Basado en: Especificacion_Requisitos_CNM.docx (RF1-RF11, RNF1-RNF8)
+    %% y en el análisis iterativo de flujo de negocio realizado en conjunto.
+    %% ·
+    %% Normalización: modelo verificado hasta 3FN. Ningún atributo no clave
+    %% depende de otro atributo no clave dentro de la misma entidad; toda
+    %% dependencia transitiva se resolvió separando en entidades propias
+    %% (ej. CAMPO_FORMULARIO / RESPUESTA_FORMULARIO en vez de columnas
+    %% dinámicas dentro de RESERVA).
+    %% ·
+    %% Notación de cardinalidad (crow's foot):
+    %%   ||  = exactamente uno       o{  = cero o muchos
+    %%   |o  = cero o uno            |{  = uno o muchos
+    %% ==================================================================
+
+    %% -------------------- RELACIONES --------------------
+
+    USUARIO ||--o{ VIAJE : "crea y administra (rol administrador) [RF2]"
+    USUARIO ||--o{ RESERVA : "realiza (rol cliente) [RF1, RF5]"
+    USUARIO |o--o{ RESERVA : "revisa y aprueba/rechaza (rol administrador, opcional hasta revisión) [RF4]"
+    USUARIO ||--o{ NOTIFICACION : "recibe [RF8, RF9]"
+    VIAJE ||--o{ RESERVA : "recibe [RF1, RF3]"
+    VIAJE ||--o{ CAMPO_FORMULARIO : "define campos personalizados [RF7]"
+    RESERVA ||--o{ ACOMPANANTE : "incluye [RF1: formulario de acompañantes]"
+    RESERVA ||--o{ RESPUESTA_FORMULARIO : "contiene respuestas de [RF7]"
+    CAMPO_FORMULARIO ||--o{ RESPUESTA_FORMULARIO : "es respondido en"
+
+    %% -------------------- ENTIDADES --------------------
+
+    USUARIO {
+        int id_usuario PK
+        varchar nombre_completo "RF9/RNF8: autocompletable en formularios"
+        varchar correo UK "RNF8: dato autocompletable"
+        varchar contrasena_hash "RNF2: hash seguro, nunca texto plano"
+        varchar rol "enum: administrador | cliente [RF5]"
+        varchar telefono "RNF8: dato autocompletable"
+        varchar sexo "RNF8: dato autocompletable"
+        varchar nacionalidad "RNF8: dato autocompletable"
+        varchar tipo_identificacion "enum: cedula | pasaporte (nota RF1)"
+        varchar numero_identificacion UK "identidad única del usuario"
+        boolean notificaciones_habilitadas "RF8: notificaciones del navegador"
+        datetime fecha_registro
+    }
+
+    VIAJE {
+        int id_viaje PK
+        int id_administrador_creador FK "usuario con rol administrador"
+        varchar titulo
+        text descripcion
+        text itinerario
+        varchar dificultad
+        datetime fecha_hora_ida
+        datetime fecha_hora_vuelta
+        varchar punto_encuentro
+        text inclusiones_adicionales
+        decimal monto_total "RF2/RF3"
+        decimal monto_reserva "RF2/RF3: monto a pagar para apartar el cupo"
+        int cupos_maximos
+        int cupos_disponibles "RNF6: control de concurrencia si <= 2"
+        varchar enlace_whatsapp "RF11: se envía por correo tras aprobación"
+        varchar estado "enum: activo | cerrado"
+        datetime fecha_creacion
+    }
+
+    CAMPO_FORMULARIO {
+        int id_campo PK
+        int id_viaje FK
+        varchar tipo_campo "enum: texto | seleccion_unica | seleccion_multiple | fecha | archivo [RF7]"
+        varchar etiqueta_pregunta
+        text opciones_respuesta "JSON; aplica solo a campos de selección"
+        int orden "posición dentro del formulario"
+        boolean obligatorio
+    }
+
+    RESERVA {
+        int id_reserva PK
+        int id_usuario FK "cliente que reserva"
+        int id_viaje FK
+        int id_administrador_revisor FK "NULL hasta que se revise [RF4]"
+        varchar estado "enum: pendiente | aprobada | rechazada | expirada"
+        datetime fecha_reserva
+        datetime fecha_limite_pago "fecha_reserva + 30 min [RF1]"
+        datetime fecha_pago
+        varchar numero_referencia_pago "comprobante de transacción [RF1]"
+        varchar captura_comprobante_url "captura de pantalla del pago [RF1]"
+        text motivo_rechazo "justificación de rechazo [RF9]"
+        datetime fecha_revision
+        boolean editable "false tras el envío; los datos no se editan post-envío [RF1]"
+    }
+
+    ACOMPANANTE {
+        int id_acompanante PK
+        int id_reserva FK
+        varchar nombre_completo
+        varchar tipo_identificacion "enum: cedula | pasaporte"
+        varchar numero_identificacion "usada para aplicar la regla de rechazo [RF9]"
+    }
+
+    RESPUESTA_FORMULARIO {
+        int id_respuesta PK
+        int id_reserva FK
+        int id_campo FK
+        text valor_respuesta
+    }
+
+    NOTIFICACION {
+        int id_notificacion PK
+        int id_usuario FK
+        varchar tipo "enum: nuevo_viaje | pocos_cupos | reserva_aprobada | reserva_rechazada [RF8, RF9]"
+        text mensaje
+        datetime fecha_envio
+        boolean leida
+    }
+
+%% ==================================================================
+%% REGLAS DE NEGOCIO NO EXPRESABLES COMO CARDINALIDAD
+%% (documentadas aquí porque el modelo ER no las representa gráficamente;
+%% deben implementarse como validaciones en la capa de servicio de Java)
+%% ==================================================================
+%% ·
+%% 1. [RF1] Una vez enviado el formulario completo de una RESERVA
+%%    (datos + acompañantes + comprobante de pago), ninguno de sus
+%%    datos ni los de sus ACOMPANANTE asociados puede editarse.
+%%    Se modela con el atributo RESERVA.editable, controlado por la
+%%    capa de negocio, no por una restricción relacional.
+%% ·
+%% 2. [RF9] Si una RESERVA es rechazada, el mismo USUARIO (por
+%%    numero_identificacion) y sus ACOMPANANTE (por numero_identificacion)
+%%    no pueden generar una nueva RESERVA para ese mismo VIAJE. Sí pueden
+%%    reservar en cualquier otro VIAJE. Esta restricción se valida
+%%    a nivel de aplicación consultando el historial de RESERVA con
+%%    estado = 'rechazada' antes de crear una nueva.
+%% ·
+%% 3. [RF1] El plazo de 30 minutos entre fecha_reserva y
+%%    fecha_limite_pago se controla mediante un proceso programado
+%%    (scheduled job) en el backend que cambia RESERVA.estado a
+%%    'expirada' y libera el cupo en VIAJE.cupos_disponibles si no se
+%%    registra el pago a tiempo.
+%% ·
+%% 4. [RNF6] Cuando VIAJE.cupos_disponibles <= 2, el backend debe
+%%    aplicar bloqueo transaccional (ej. SELECT ... FOR UPDATE en
+%%    PostgreSQL) al crear una RESERVA, para impedir que dos usuarios
+%%    obtengan el mismo último cupo simultáneamente.
+%% ==================================================================
