@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "6fb1a47e26bafb22",
+        "id": "b165e0bdebe60b23",
         "type": "tabs",
         "children": [
           {
-            "id": "3d61985998bc4be4",
+            "id": "7e0d15403c6b4f93",
             "type": "leaf",
             "state": {
               "type": "empty",
               "state": {},
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Nueva pestaña"
             }
           }
         ]
@@ -42,7 +42,7 @@
                 "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
-              "title": "Files"
+              "title": "Explorador de archivos"
             }
           },
           {
@@ -162,25 +162,40 @@
               "icon": "lucide-list",
               "title": "Outline"
             }
+          },
+          {
+            "id": "3fcdc3722b575d0a",
+            "type": "leaf",
+            "state": {
+              "type": "mermaid-toolbar-view",
+              "state": {},
+              "icon": "trident-custom",
+              "title": "Mermaid Toolbar"
+            }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
-      "switcher:Open quick switcher": false,
-      "graph:Open graph view": false,
-      "canvas:Create new canvas": false,
-      "daily-notes:Open today's daily note": false,
-      "templates:Insert template": false,
-      "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Crear nueva base": false,
+      "mermaid-tools:Open Mermaid Toolbar": false
     }
   },
-  "active": "f01dd8819445f1bf",
-  "lastOpenFiles": []
+  "active": "3fcdc3722b575d0a",
+  "lastOpenFiles": [
+    "Sin título.base",
+    "in título.base",
+    "database-er.mmd"
+  ]
 }

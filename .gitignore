@@ -33,4 +33,7 @@ build/
 .vscode/
 
 ### Obsidian ###
-diagramas-mermaid/obsidian/
+diagramas-mermaid/.obsidian/
+
+### Env ###
+.env
