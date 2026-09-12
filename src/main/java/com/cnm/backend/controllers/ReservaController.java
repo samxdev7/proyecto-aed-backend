@@ -88,7 +88,8 @@ public class ReservaController {
                 null,
                 ZonedDateTime.now().minusDays(2),
                 false,
-                Collections.emptyList(),
+                List.of(new com.cnm.backend.dto.reserva.AcompananteDto(
+                        "Ana", "María", "Pérez", "Gómez", "cedula", "001-120395-0002X")),
                 Collections.emptyList()
         );
         return ResponseEntity.ok(detalle);

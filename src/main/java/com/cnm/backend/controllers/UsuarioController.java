@@ -215,8 +215,10 @@ public class UsuarioController {
                 ZonedDateTime.now().minusDays(5),
                 ZonedDateTime.now().minusDays(4),
                 "Comprobante de pago no coincide con el monto de reserva.",
-                Collections.emptyList(),
-                Collections.emptyList()
+                List.of(new com.cnm.backend.dto.historial.AcompananteHistorialDto(
+                        "Ana María Pérez Gómez", "cedula", "001-120395-0002X")),
+                List.of(new com.cnm.backend.dto.historial.RespuestaFormularioHistorialDto(
+                        "Contacto de emergencia", "+505 8888-1234"))
         );
         return ResponseEntity.ok(detalle);
     }
