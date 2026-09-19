@@ -8,8 +8,10 @@ import com.cnm.backend.dto.historial.ViajeHistorialResumenDto;
 import com.cnm.backend.dto.usuario.ActualizarNotificacionesRequestDto;
 import com.cnm.backend.dto.usuario.ActualizarPerfilRequestDto;
 import com.cnm.backend.dto.usuario.UsuarioPerfilResponseDto;
+import com.cnm.backend.entity.Usuario;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,12 +39,24 @@ public class UsuarioController {
      * Obtiene los datos del perfil del usuario autenticado para autocompletar formularios (RNF8).
      */
     @GetMapping("/me")
-    public ResponseEntity<UsuarioPerfilResponseDto> obtenerMiPerfil() {
+    public ResponseEntity<UsuarioPerfilResponseDto> obtenerMiPerfil(
+            @AuthenticationPrincipal Usuario usuario) {
         UsuarioPerfilResponseDto perfil = new UsuarioPerfilResponseDto(
-                1L, "Carlos", "Alberto", "González", "López",
-                "Carlos Alberto González López", "carlos@example.com", "cliente",
-                "+505 8888-9999", "M", "Nicaragüense", "cedula",
-                "001-150890-0001A", true, ZonedDateTime.now()
+                usuario.getIdUsuario(),
+                usuario.getPrimerNombre(),
+                usuario.getSegundoNombre(),
+                usuario.getPrimerApellido(),
+                usuario.getSegundoApellido(),
+                usuario.getNombreCompleto(),
+                usuario.getCorreo(),
+                usuario.getRol().name(),
+                usuario.getTelefono(),
+                usuario.getSexo(),
+                usuario.getNacionalidad(),
+                usuario.getTipoIdentificacion(),
+                usuario.getNumeroIdentificacion(),
+                usuario.isNotificacionesHabilitadas(),
+                usuario.getFechaRegistro()
         );
         return ResponseEntity.ok(perfil);
     }
