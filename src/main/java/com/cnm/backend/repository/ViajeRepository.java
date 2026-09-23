@@ -1,7 +1,7 @@
 package com.cnm.backend.repository;
 
 import com.cnm.backend.entity.Rol;
-import com.cnm.backend.entity.Usuario;
+import com.cnm.backend.entity.Viaje;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,30 +14,15 @@ import java.util.Optional;
  * Gestiona el acceso a datos y consultas derivadas para la tabla 'usuario'.
  */
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+public interface ViajeRepository extends JpaRepository<Viaje, Long> {
 
     /**
-     * Busca un usuario por su correo electrónico (utilizado en AuthService para login y verificación).
+     * Busca un viaje por su identificador primario.
      */
-    Optional<Usuario> findByCorreo(String correo);
+    Optional<Viaje> findByIdViaje(Long idViaje);
 
     /**
-     * Comprueba si un correo ya se encuentra registrado (útil para validación en registro - RF5).
+     * Obtiene una lista paginada de viajes filtrando por su estado (activo/cerrado).
      */
-    boolean existsByCorreo(String correo);
-
-    /**
-     * Comprueba si un número de identificación (cédula/pasaporte) ya está en uso.
-     */
-    boolean existsByNumeroIdentificacion(String numeroIdentificacion);
-
-    /**
-     * Busca un usuario por su número de identificación oficial.
-     */
-    Optional<Usuario> findByNumeroIdentificacion(String numeroIdentificacion);
-
-    /**
-     * Obtiene una lista paginada de usuarios filtrando por su rol (Endpoint B5).
-     */
-    Page<Usuario> findByRol(Rol rol, Pageable pageable);
+    Page<Viaje> findByEstado(com.cnm.backend.entity.Estado estado, Pageable pageable);
 }
