@@ -3,6 +3,7 @@ package com.cnm.backend.controllers;
 import com.cnm.backend.dto.campo.ActualizarCampoFormularioRequestDto;
 import com.cnm.backend.dto.campo.CampoFormularioResponseDto;
 import com.cnm.backend.dto.campo.CrearCampoFormularioRequestDto;
+import com.cnm.backend.service.CampoFormularioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,12 @@ import java.util.List;
 @RequestMapping("/viajes/{idViaje}/campos-formulario")
 public class CampoFormularioController {
 
+    private final CampoFormularioService campoFormularioService;
+
+    public CampoFormularioController(CampoFormularioService campoFormularioService) {
+        this.campoFormularioService = campoFormularioService;
+    }
+
     /**
      * D1: GET /viajes/{idViaje}/campos-formulario [Público]
      * Lista los campos personalizados definidos para el formulario de un viaje, en orden (RF7).
@@ -32,16 +39,7 @@ public class CampoFormularioController {
     @GetMapping
     public ResponseEntity<List<CampoFormularioResponseDto>> listarCamposPorViaje(
             @PathVariable Long idViaje) {
-        CampoFormularioResponseDto campo1 = new CampoFormularioResponseDto(
-                1L, idViaje, "texto", "¿Tiene alguna condición médica relevante o alergias?",
-                null, 1, false
-        );
-        CampoFormularioResponseDto campo2 = new CampoFormularioResponseDto(
-                2L, idViaje, "seleccion_unica", "Nivel de experiencia previa en caminatas de montaña",
-                "[\"Ninguna\", \"Principiante (1-2 ascensos)\", \"Intermedio\", \"Avanzado\"]",
-                2, true
-        );
-        return ResponseEntity.ok(List.of(campo1, campo2));
+        return ResponseEntity.ok(campoFormularioService.listarCamposPorViaje(idViaje));
     }
 
     /**
@@ -52,10 +50,7 @@ public class CampoFormularioController {
     public ResponseEntity<CampoFormularioResponseDto> crearCampo(
             @PathVariable Long idViaje,
             @Valid @RequestBody CrearCampoFormularioRequestDto request) {
-        CampoFormularioResponseDto nuevoCampo = new CampoFormularioResponseDto(
-                10L, idViaje, request.tipoCampo(), request.etiquetaPregunta(),
-                request.opcionesRespuesta(), request.orden(), request.obligatorio()
-        );
+        CampoFormularioResponseDto nuevoCampo = campoFormularioService.crearCampo(idViaje, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoCampo);
     }
 
@@ -68,11 +63,7 @@ public class CampoFormularioController {
             @PathVariable Long idViaje,
             @PathVariable Long idCampo,
             @Valid @RequestBody ActualizarCampoFormularioRequestDto request) {
-        CampoFormularioResponseDto campoActualizado = new CampoFormularioResponseDto(
-                idCampo, idViaje, "texto", request.etiquetaPregunta(),
-                request.opcionesRespuesta(), request.orden(), request.obligatorio()
-        );
-        return ResponseEntity.ok(campoActualizado);
+        return ResponseEntity.ok(campoFormularioService.actualizarCampo(idViaje, idCampo, request));
     }
 
     /**
@@ -83,7 +74,7 @@ public class CampoFormularioController {
     public ResponseEntity<Void> eliminarCampo(
             @PathVariable Long idViaje,
             @PathVariable Long idCampo) {
-        // En Service se valida que no existan respuestas asociadas para no corromper histórico.
+        campoFormularioService.eliminarCampo(idViaje, idCampo);
         return ResponseEntity.noContent().build();
     }
 }
