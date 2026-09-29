@@ -58,6 +58,7 @@ public class Usuario {
     public Usuario() {}
 
     public Long getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
     public String getPrimerNombre() { return primerNombre; }
     public void setPrimerNombre(String primerNombre) { this.primerNombre = primerNombre; }
     public String getSegundoNombre() { return segundoNombre; }
