@@ -66,6 +66,12 @@ public class Viaje {
     @Column(name = "enlace_whatsapp", length = 50)
     private String enlaceWhatsApp;
 
+    @Column(name = "imagen_url", length = 500)
+    private String imagenUrl;
+
+    @Column(name = "equipo", columnDefinition = "text")
+    private String equipo;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 50)
     private Estado estado;
@@ -105,6 +111,10 @@ public class Viaje {
     public void setCuposDisponibles(Integer cuposDisponibles) { this.cuposDisponibles = cuposDisponibles; }
     public String getEnlaceWhatsApp() { return enlaceWhatsApp; }
     public void setEnlaceWhatsApp(String enlaceWhatsApp) { this.enlaceWhatsApp = enlaceWhatsApp; }
+    public String getImagenUrl() { return imagenUrl; }
+    public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
+    public String getEquipo() { return equipo; }
+    public void setEquipo(String equipo) { this.equipo = equipo; }
     public Estado getEstado() { return estado; }
     public void setEstado(Estado estado) { this.estado = estado; }
     public ZonedDateTime getFechaCreacion() { return fechaCreacion; }

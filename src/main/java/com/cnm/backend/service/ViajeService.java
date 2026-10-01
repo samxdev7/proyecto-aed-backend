@@ -10,15 +10,18 @@ import com.cnm.backend.entity.Estado;
 import com.cnm.backend.entity.Viaje;
 import com.cnm.backend.repository.ReservaRepository;
 import com.cnm.backend.repository.ViajeRepository;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,8 +58,28 @@ public class ViajeService {
             }
         }
 
+        // ponytail: Specification dinámica en vez de JPQL con ":param IS NULL": Hibernate 6 +
+        // PostgreSQL no tipa parámetros null y el listado público caía con 500
+        // ("could not determine data type of parameter"). Si se necesitan filtros compuestos
+        // más complejos, crecer aquí; el patrón ya soporta cualquier combinación.
+        final String dif = dificultad;
+        final Estado est = estado;
+        Specification<Viaje> spec = (root, query, cb) -> {
+            List<Predicate> condiciones = new ArrayList<>();
+            if (dif != null && !dif.isBlank()) {
+                condiciones.add(cb.equal(root.get("dificultad"), dif));
+            }
+            if (fechaDesde != null) {
+                condiciones.add(cb.greaterThanOrEqualTo(root.get("fechaHoraIda"), fechaDesde));
+            }
+            if (est != null) {
+                condiciones.add(cb.equal(root.get("estado"), est));
+            }
+            return cb.and(condiciones.toArray(new Predicate[0]));
+        };
+
         Pageable pageable = PageRequest.of(page, size);
-        Page<Viaje> viajesPage = viajeRepository.buscarConFiltros(dificultad, fechaDesde, estado, pageable);
+        Page<Viaje> viajesPage = viajeRepository.findAll(spec, pageable);
 
         List<ViajeResumenDto> items = viajesPage.getContent().stream()
                 .map(this::mapToResumenDto)
@@ -101,6 +124,8 @@ public class ViajeService {
         viaje.setCuposMaximos(request.cuposMaximos());
         viaje.setCuposDisponibles(request.cuposMaximos());
         viaje.setEnlaceWhatsApp(request.enlaceWhatsApp());
+        viaje.setImagenUrl(request.imagenUrl());
+        viaje.setEquipo(request.equipo());
         viaje.setEstado(Estado.activo);
         viaje.setFechaCreacion(ZonedDateTime.now());
 
@@ -141,6 +166,8 @@ public class ViajeService {
         viaje.setCuposMaximos(request.cuposMaximos());
         viaje.setCuposDisponibles(request.cuposMaximos() - cuposOcupados);
         viaje.setEnlaceWhatsApp(request.enlaceWhatsApp());
+        viaje.setImagenUrl(request.imagenUrl());
+        viaje.setEquipo(request.equipo());
 
         Viaje guardado = viajeRepository.save(viaje);
         return mapToDetalleDto(guardado);
@@ -207,7 +234,8 @@ public class ViajeService {
                 viaje.getMontoReserva(),
                 viaje.getCuposMaximos(),
                 viaje.getCuposDisponibles(),
-                viaje.getEstado() != null ? viaje.getEstado().name() : "activo"
+                viaje.getEstado() != null ? viaje.getEstado().name() : "activo",
+                viaje.getImagenUrl()
         );
     }
 
@@ -229,7 +257,9 @@ public class ViajeService {
                 viaje.getCuposDisponibles(),
                 viaje.getEnlaceWhatsApp(),
                 viaje.getEstado() != null ? viaje.getEstado().name() : "activo",
-                viaje.getFechaCreacion()
+                viaje.getFechaCreacion(),
+                viaje.getImagenUrl(),
+                viaje.getEquipo()
         );
     }
 }

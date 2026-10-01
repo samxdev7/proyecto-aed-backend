@@ -51,5 +51,12 @@ public record CrearViajeRequestDto(
     @Positive(message = "Los cupos máximos deben ser mayores a cero")
     Integer cuposMaximos,
 
-    String enlaceWhatsApp
+    String enlaceWhatsApp,
+
+    /** Ruta o URL de la imagen principal del viaje (catálogo público). */
+    @Size(max = 500, message = "La URL de imagen no debe superar 500 caracteres")
+    String imagenUrl,
+
+    /** Equipo requerido para el viaje, una línea por elemento. */
+    String equipo
 ) {}

@@ -19,5 +19,6 @@ public record ViajeResumenDto(
     BigDecimal montoReserva,
     Integer cuposMaximos,
     Integer cuposDisponibles,
-    String estado
+    String estado,
+    String imagenUrl
 ) {}

@@ -19,6 +19,9 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: 3600000
+  cors:
+    # "*" = cualquier origen (dev out-of-box); en producción: lista separada por comas.
+    origins: ${CORS_ORIGINS:*}
 
 server:
   port: ${PORT:8080}
