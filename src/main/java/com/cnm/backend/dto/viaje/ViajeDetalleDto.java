@@ -24,5 +24,7 @@ public record ViajeDetalleDto(
     Integer cuposDisponibles,
     String enlaceWhatsApp,
     String estado,
-    ZonedDateTime fechaCreacion
+    ZonedDateTime fechaCreacion,
+    String imagenUrl,
+    String equipo
 ) {}

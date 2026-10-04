@@ -14,6 +14,9 @@ public class CnmBackendApplication {
     System.setProperty("DB_USER", dotenv.get("DB_USER"));
     System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
     System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
+    // Opcional: restringir orígenes CORS en producción (lista separada por comas).
+    String corsOrigenes = dotenv.get("CORS_ORIGINS");
+    if (corsOrigenes != null) System.setProperty("CORS_ORIGINS", corsOrigenes);
 		SpringApplication.run(CnmBackendApplication.class, args);
 	}
 

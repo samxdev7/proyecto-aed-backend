@@ -5,9 +5,13 @@ import com.cnm.backend.dto.reserva.CrearReservaRequestDto;
 import com.cnm.backend.dto.reserva.RechazarReservaRequestDto;
 import com.cnm.backend.dto.reserva.ReservaAdminResumenDto;
 import com.cnm.backend.dto.reserva.ReservaDetalleDto;
+import com.cnm.backend.entity.Rol;
+import com.cnm.backend.entity.Usuario;
+import com.cnm.backend.service.ReservaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,11 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Controlador REST para el Módulo de Reservas.
  * Núcleo del sistema: cubre los endpoints E1-E5 del Catálogo de Endpoints (Derivado de RF1, RF4, RF9, RF10, RF11).
@@ -30,6 +29,12 @@ import java.util.List;
 @RequestMapping("/reservas")
 public class ReservaController {
 
+    private final ReservaService reservaService;
+
+    public ReservaController(ReservaService reservaService) {
+        this.reservaService = reservaService;
+    }
+
     /**
      * E1: POST /reservas [Cliente]
      * Crea una reserva completa en un solo envío: datos de reserva, acompañantes,
@@ -37,29 +42,10 @@ public class ReservaController {
      */
     @PostMapping
     public ResponseEntity<ReservaDetalleDto> crearReserva(
+            @AuthenticationPrincipal Usuario usuario,
             @Valid @RequestBody CrearReservaRequestDto request) {
-        // En Service se valida bloqueo transaccional si cupos <= 2 (RNF6) y no-reincidencia si fue rechazado (RF9).
-        ReservaDetalleDto reservaCreada = new ReservaDetalleDto(
-                500L,
-                1L,
-                "Carlos Alberto González López",
-                "carlos@example.com",
-                request.idViaje(),
-                "Volcán Telica - Ascenso y Campamento Nocturno",
-                null,
-                "pendiente",
-                new BigDecimal("400.00"),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMinutes(30),
-                ZonedDateTime.now(),
-                request.numeroReferenciaPago(),
-                request.capturaComprobanteUrl(),
-                null,
-                null,
-                false,
-                request.acompanantes() != null ? request.acompanantes() : Collections.emptyList(),
-                request.respuestasFormulario() != null ? request.respuestasFormulario() : Collections.emptyList()
-        );
+        Long idUsuario = (usuario != null) ? usuario.getIdUsuario() : 1L;
+        ReservaDetalleDto reservaCreada = reservaService.crearReserva(idUsuario, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(reservaCreada);
     }
 
@@ -69,30 +55,11 @@ public class ReservaController {
      */
     @GetMapping("/{idReserva}")
     public ResponseEntity<ReservaDetalleDto> obtenerReservaPorId(
+            @AuthenticationPrincipal Usuario usuario,
             @PathVariable Long idReserva) {
-        ReservaDetalleDto detalle = new ReservaDetalleDto(
-                idReserva,
-                1L,
-                "Carlos Alberto González López",
-                "carlos@example.com",
-                1L,
-                "Volcán Telica - Ascenso y Campamento Nocturno",
-                2L,
-                "aprobada",
-                new BigDecimal("400.00"),
-                ZonedDateTime.now().minusDays(3),
-                ZonedDateTime.now().minusDays(3).plusMinutes(30),
-                ZonedDateTime.now().minusDays(3).plusMinutes(10),
-                "REF-BAC-987654321",
-                "https://storage.cnm.org.ni/comprobantes/ref987654321.png",
-                null,
-                ZonedDateTime.now().minusDays(2),
-                false,
-                List.of(new com.cnm.backend.dto.reserva.AcompananteDto(
-                        "Ana", "María", "Pérez", "Gómez", "cedula", "001-120395-0002X")),
-                Collections.emptyList()
-        );
-        return ResponseEntity.ok(detalle);
+        Long idUsuario = (usuario != null) ? usuario.getIdUsuario() : 1L;
+        boolean esAdmin = usuario != null && Rol.administrador.equals(usuario.getRol());
+        return ResponseEntity.ok(reservaService.obtenerReservaPorId(idReserva, idUsuario, esAdmin));
     }
 
     /**
@@ -105,26 +72,7 @@ public class ReservaController {
             @RequestParam(required = false) Long idViaje,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        ReservaAdminResumenDto mock = new ReservaAdminResumenDto(
-                500L,
-                idViaje != null ? idViaje : 1L,
-                "Volcán Telica - Ascenso y Campamento Nocturno",
-                1L,
-                "Carlos Alberto González López",
-                "carlos@example.com",
-                estado != null ? estado : "pendiente",
-                new BigDecimal("400.00"),
-                ZonedDateTime.now().minusHours(1),
-                ZonedDateTime.now().minusHours(1).plusMinutes(30),
-                ZonedDateTime.now().minusHours(1).plusMinutes(15),
-                "REF-BAC-987654321",
-                null,
-                0
-        );
-        PageResponseDto<ReservaAdminResumenDto> response = new PageResponseDto<>(
-                List.of(mock), page, size, 1L, 1
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservaService.listarReservasAdmin(estado, idViaje, page, size));
     }
 
     /**
@@ -133,29 +81,11 @@ public class ReservaController {
      * y notificación web (RF9).
      */
     @PatchMapping("/{idReserva}/aprobar")
-    public ResponseEntity<ReservaDetalleDto> aprobarReserva(@PathVariable Long idReserva) {
-        ReservaDetalleDto reservaAprobada = new ReservaDetalleDto(
-                idReserva,
-                1L,
-                "Carlos Alberto González López",
-                "carlos@example.com",
-                1L,
-                "Volcán Telica - Ascenso y Campamento Nocturno",
-                2L,
-                "aprobada",
-                new BigDecimal("400.00"),
-                ZonedDateTime.now().minusHours(2),
-                ZonedDateTime.now().minusHours(2).plusMinutes(30),
-                ZonedDateTime.now().minusHours(2).plusMinutes(12),
-                "REF-BAC-987654321",
-                "https://storage.cnm.org.ni/comprobantes/ref987654321.png",
-                null,
-                ZonedDateTime.now(),
-                false,
-                Collections.emptyList(),
-                Collections.emptyList()
-        );
-        return ResponseEntity.ok(reservaAprobada);
+    public ResponseEntity<ReservaDetalleDto> aprobarReserva(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long idReserva) {
+        Long idAdmin = (usuario != null) ? usuario.getIdUsuario() : 1L;
+        return ResponseEntity.ok(reservaService.aprobarReserva(idReserva, idAdmin));
     }
 
     /**
@@ -165,29 +95,10 @@ public class ReservaController {
      */
     @PatchMapping("/{idReserva}/rechazar")
     public ResponseEntity<ReservaDetalleDto> rechazarReserva(
+            @AuthenticationPrincipal Usuario usuario,
             @PathVariable Long idReserva,
             @Valid @RequestBody RechazarReservaRequestDto request) {
-        ReservaDetalleDto reservaRechazada = new ReservaDetalleDto(
-                idReserva,
-                1L,
-                "Carlos Alberto González López",
-                "carlos@example.com",
-                1L,
-                "Volcán Telica - Ascenso y Campamento Nocturno",
-                2L,
-                "rechazada",
-                new BigDecimal("400.00"),
-                ZonedDateTime.now().minusHours(2),
-                ZonedDateTime.now().minusHours(2).plusMinutes(30),
-                ZonedDateTime.now().minusHours(2).plusMinutes(12),
-                "REF-BAC-987654321",
-                "https://storage.cnm.org.ni/comprobantes/ref987654321.png",
-                request.motivoRechazo(),
-                ZonedDateTime.now(),
-                false,
-                Collections.emptyList(),
-                Collections.emptyList()
-        );
-        return ResponseEntity.ok(reservaRechazada);
+        Long idAdmin = (usuario != null) ? usuario.getIdUsuario() : 1L;
+        return ResponseEntity.ok(reservaService.rechazarReserva(idReserva, idAdmin, request));
     }
 }

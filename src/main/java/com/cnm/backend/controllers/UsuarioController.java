@@ -3,12 +3,11 @@ package com.cnm.backend.controllers;
 import com.cnm.backend.dto.common.PageResponseDto;
 import com.cnm.backend.dto.historial.HistorialReservaDetalleDto;
 import com.cnm.backend.dto.historial.HistorialReservaResumenDto;
-import com.cnm.backend.dto.historial.ViajeHistorialDetalleDto;
-import com.cnm.backend.dto.historial.ViajeHistorialResumenDto;
 import com.cnm.backend.dto.usuario.ActualizarNotificacionesRequestDto;
 import com.cnm.backend.dto.usuario.ActualizarPerfilRequestDto;
 import com.cnm.backend.dto.usuario.UsuarioPerfilResponseDto;
 import com.cnm.backend.entity.Usuario;
+import com.cnm.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,11 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Controlador REST para el Módulo de Usuarios e Historial de Usuarios.
  * Cubre los endpoints B1-B5 del Módulo de Usuarios y H1-H4 del Contrato REST de Historial.
@@ -34,6 +28,12 @@ import java.util.List;
 @RequestMapping("/usuarios")
 public class UsuarioController {
 
+    private final UsuarioService usuarioService;
+
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
     /**
      * B1: GET /usuarios/me [Cliente, Administrador]
      * Obtiene los datos del perfil del usuario autenticado para autocompletar formularios (RNF8).
@@ -41,24 +41,7 @@ public class UsuarioController {
     @GetMapping("/me")
     public ResponseEntity<UsuarioPerfilResponseDto> obtenerMiPerfil(
             @AuthenticationPrincipal Usuario usuario) {
-        UsuarioPerfilResponseDto perfil = new UsuarioPerfilResponseDto(
-                usuario.getIdUsuario(),
-                usuario.getPrimerNombre(),
-                usuario.getSegundoNombre(),
-                usuario.getPrimerApellido(),
-                usuario.getSegundoApellido(),
-                usuario.getNombreCompleto(),
-                usuario.getCorreo(),
-                usuario.getRol().name(),
-                usuario.getTelefono(),
-                usuario.getSexo(),
-                usuario.getNacionalidad(),
-                usuario.getTipoIdentificacion(),
-                usuario.getNumeroIdentificacion(),
-                usuario.isNotificacionesHabilitadas(),
-                usuario.getFechaRegistro()
-        );
-        return ResponseEntity.ok(perfil);
+        return ResponseEntity.ok(usuarioService.obtenerPerfil(usuario.getIdUsuario()));
     }
 
     /**
@@ -67,24 +50,9 @@ public class UsuarioController {
      */
     @PatchMapping("/me")
     public ResponseEntity<UsuarioPerfilResponseDto> actualizarMiPerfil(
+            @AuthenticationPrincipal Usuario usuario,
             @Valid @RequestBody ActualizarPerfilRequestDto request) {
-        UsuarioPerfilResponseDto perfilActualizado = new UsuarioPerfilResponseDto(
-                1L,
-                request.primerNombre() != null ? request.primerNombre() : "Carlos",
-                request.segundoNombre(),
-                request.primerApellido() != null ? request.primerApellido() : "González",
-                request.segundoApellido(),
-                UsuarioPerfilResponseDto.construirNombreCompleto(
-                        request.primerNombre() != null ? request.primerNombre() : "Carlos",
-                        request.segundoNombre(),
-                        request.primerApellido() != null ? request.primerApellido() : "González",
-                        request.segundoApellido()),
-                "carlos@example.com", "cliente",
-                request.telefono(), request.sexo(), request.nacionalidad(),
-                request.tipoIdentificacion(), request.numeroIdentificacion(),
-                true, ZonedDateTime.now()
-        );
-        return ResponseEntity.ok(perfilActualizado);
+        return ResponseEntity.ok(usuarioService.actualizarPerfil(usuario.getIdUsuario(), request));
     }
 
     /**
@@ -93,14 +61,9 @@ public class UsuarioController {
      */
     @PatchMapping("/me/notificaciones")
     public ResponseEntity<UsuarioPerfilResponseDto> actualizarNotificaciones(
+            @AuthenticationPrincipal Usuario usuario,
             @Valid @RequestBody ActualizarNotificacionesRequestDto request) {
-        UsuarioPerfilResponseDto perfil = new UsuarioPerfilResponseDto(
-                1L, "Carlos", "Alberto", "González", "López",
-                "Carlos Alberto González López", "carlos@example.com", "cliente",
-                "+505 8888-9999", "M", "Nicaragüense", "cedula",
-                "001-150890-0001A", request.notificacionesHabilitadas(), ZonedDateTime.now()
-        );
-        return ResponseEntity.ok(perfil);
+        return ResponseEntity.ok(usuarioService.actualizarNotificaciones(usuario.getIdUsuario(), request));
     }
 
     /**
@@ -110,13 +73,7 @@ public class UsuarioController {
     @GetMapping("/{idUsuario}")
     public ResponseEntity<UsuarioPerfilResponseDto> obtenerUsuarioPorId(
             @PathVariable Long idUsuario) {
-        UsuarioPerfilResponseDto perfil = new UsuarioPerfilResponseDto(
-                idUsuario, "Juan", "José", "Pérez", "Martínez",
-                "Juan José Pérez Martínez", "juan@example.com", "cliente",
-                "+505 8777-6655", "M", "Nicaragüense", "cedula",
-                "001-200195-0003B", true, ZonedDateTime.now()
-        );
-        return ResponseEntity.ok(perfil);
+        return ResponseEntity.ok(usuarioService.obtenerPerfil(idUsuario));
     }
 
     /**
@@ -128,16 +85,7 @@ public class UsuarioController {
             @RequestParam(required = false) String rol,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        UsuarioPerfilResponseDto mock = new UsuarioPerfilResponseDto(
-                1L, "Carlos", "Alberto", "González", "López",
-                "Carlos Alberto González López", "carlos@example.com", rol != null ? rol : "cliente",
-                "+505 8888-9999", "M", "Nicaragüense", "cedula",
-                "001-150890-0001A", true, ZonedDateTime.now()
-        );
-        PageResponseDto<UsuarioPerfilResponseDto> response = new PageResponseDto<>(
-                List.of(mock), page, size, 1L, 1
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(usuarioService.listarUsuarios(rol, page, size));
     }
 
     // =========================================================================
@@ -151,21 +99,11 @@ public class UsuarioController {
      */
     @GetMapping("/me/historial")
     public ResponseEntity<PageResponseDto<HistorialReservaResumenDto>> obtenerMiHistorial(
+            @AuthenticationPrincipal Usuario usuario,
             @RequestParam(required = false) String estado,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        HistorialReservaResumenDto mock = new HistorialReservaResumenDto(
-                1042L,
-                new ViajeHistorialResumenDto(58L, "Cerro Mogotón - Ruta Norte", "Alta", ZonedDateTime.now()),
-                estado != null ? estado.toUpperCase() : "APROBADA",
-                new BigDecimal("450.00"),
-                ZonedDateTime.now().minusDays(5),
-                ZonedDateTime.now().minusDays(4)
-        );
-        PageResponseDto<HistorialReservaResumenDto> response = new PageResponseDto<>(
-                List.of(mock), page, size, 1L, 1
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(usuarioService.obtenerHistorial(usuario.getIdUsuario(), estado, page, size));
     }
 
     /**
@@ -178,18 +116,7 @@ public class UsuarioController {
             @RequestParam(required = false) String estado,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        HistorialReservaResumenDto mock = new HistorialReservaResumenDto(
-                1042L,
-                new ViajeHistorialResumenDto(58L, "Cerro Mogotón - Ruta Norte", "Alta", ZonedDateTime.now()),
-                estado != null ? estado.toUpperCase() : "APROBADA",
-                new BigDecimal("450.00"),
-                ZonedDateTime.now().minusDays(5),
-                ZonedDateTime.now().minusDays(4)
-        );
-        PageResponseDto<HistorialReservaResumenDto> response = new PageResponseDto<>(
-                List.of(mock), page, size, 1L, 1
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(usuarioService.obtenerHistorial(idUsuario, estado, page, size));
     }
 
     /**
@@ -198,19 +125,9 @@ public class UsuarioController {
      */
     @GetMapping("/me/historial/{idReserva}")
     public ResponseEntity<HistorialReservaDetalleDto> obtenerMiDetalleHistorial(
+            @AuthenticationPrincipal Usuario usuario,
             @PathVariable Long idReserva) {
-        HistorialReservaDetalleDto detalle = new HistorialReservaDetalleDto(
-                idReserva,
-                "APROBADA",
-                new ViajeHistorialDetalleDto(58L, "Cerro Mogotón - Ruta Norte"),
-                new BigDecimal("450.00"),
-                ZonedDateTime.now().minusDays(5),
-                ZonedDateTime.now().minusDays(4),
-                null,
-                Collections.emptyList(),
-                Collections.emptyList()
-        );
-        return ResponseEntity.ok(detalle);
+        return ResponseEntity.ok(usuarioService.obtenerDetalleHistorial(usuario.getIdUsuario(), idReserva, false));
     }
 
     /**
@@ -221,19 +138,6 @@ public class UsuarioController {
     public ResponseEntity<HistorialReservaDetalleDto> obtenerDetalleHistorialUsuario(
             @PathVariable Long idUsuario,
             @PathVariable Long idReserva) {
-        HistorialReservaDetalleDto detalle = new HistorialReservaDetalleDto(
-                idReserva,
-                "RECHAZADA",
-                new ViajeHistorialDetalleDto(58L, "Cerro Mogotón - Ruta Norte"),
-                new BigDecimal("450.00"),
-                ZonedDateTime.now().minusDays(5),
-                ZonedDateTime.now().minusDays(4),
-                "Comprobante de pago no coincide con el monto de reserva.",
-                List.of(new com.cnm.backend.dto.historial.AcompananteHistorialDto(
-                        "Ana María Pérez Gómez", "cedula", "001-120395-0002X")),
-                List.of(new com.cnm.backend.dto.historial.RespuestaFormularioHistorialDto(
-                        "Contacto de emergencia", "+505 8888-1234"))
-        );
-        return ResponseEntity.ok(detalle);
+        return ResponseEntity.ok(usuarioService.obtenerDetalleHistorial(idUsuario, idReserva, true));
     }
 }
