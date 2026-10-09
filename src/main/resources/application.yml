@@ -5,12 +5,17 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   flyway:
     locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 2
   jpa:
     hibernate:
-      ddl-auto: validate
-
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: app
 logging:
   level:
     com.cnm.backend: INFO

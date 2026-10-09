@@ -18,7 +18,7 @@ public class Viaje {
     @Column(name = "id_viaje")
     private Long idViaje;
 
-    @Column(name = "id_administrador_creador", nullable = false, columnDefinition = "REFERENCES usuario(id_usuario)")
+    @Column(name = "id_administrador_creador", nullable = false, columnDefinition = "bigint REFERENCES app.usuario(id_usuario)")
     private Long idAdministradorCreador;
 
     @Column(name = "titulo", nullable = false, length = 50)
