@@ -37,3 +37,9 @@ diagramas-mermaid/.obsidian/
 
 ### Env ###
 .env
+
+### OpenCode / La Agencia (artefactos locales, no se suben) ###
+.opencode/
+PLAN.md
+INFORME-*.md
+docs/entregables/
