@@ -46,7 +46,9 @@ public class EstadisticaService {
     @Transactional(readOnly = true)
     public EstadisticasPanelResponseDto obtenerEstadisticasPanel() {
         Page<Viaje> viajesPage = viajeRepository.findByEstado(Estado.activo, Pageable.unpaged());
-        List<Viaje> viajesActivos = viajesPage.getContent();
+        List<Viaje> viajesActivos = viajesPage.getContent().stream()
+                .filter(v -> !Boolean.TRUE.equals(v.getArchivado()))
+                .toList();
 
         // 1. Inscritos y porcentaje de ocupación por viaje.
         List<InscritosPorViajeDto> inscritosPorViajeDtos = viajesActivos.stream()

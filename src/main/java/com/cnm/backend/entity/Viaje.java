@@ -79,6 +79,9 @@ public class Viaje {
     @Column(name = "fecha_creacion", nullable = false)
     private ZonedDateTime fechaCreacion;
 
+    @Column(name = "archivado", nullable = false)
+    private Boolean archivado = false;
+
     public Viaje() {}
 
     public Long getIdViaje() { return idViaje; }
@@ -119,4 +122,6 @@ public class Viaje {
     public void setEstado(Estado estado) { this.estado = estado; }
     public ZonedDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(ZonedDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+    public Boolean getArchivado() { return archivado; }
+    public void setArchivado(Boolean archivado) { this.archivado = archivado; }
 }

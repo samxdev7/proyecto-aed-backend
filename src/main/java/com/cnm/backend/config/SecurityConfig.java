@@ -73,9 +73,12 @@ public class SecurityConfig {
                 // Públicos
                 .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes", "/viajes/*/campos-formulario").permitAll()
-                .requestMatchers(HttpMethod.GET, "/viajes/{idViaje}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/viajes/archivados").permitAll()
 
                 // Solo ADMIN (orden importa: reglas específicas antes de genéricas)
+                .requestMatchers(HttpMethod.GET, "/viajes/no-archivados").hasRole("ADMINISTRADOR")
+                .requestMatchers(HttpMethod.GET, "/viajes/{idViaje}").permitAll()
+
                 .requestMatchers(HttpMethod.POST, "/viajes").hasRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.PUT, "/viajes/**").hasRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.PATCH, "/viajes/**").hasRole("ADMINISTRADOR")

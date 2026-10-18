@@ -84,6 +84,11 @@ public class ReservaService {
                     "El viaje seleccionado no se encuentra activo para recibir reservas.");
         }
 
+        if (Boolean.TRUE.equals(viaje.getArchivado())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El viaje seleccionado se encuentra archivado y no acepta nuevas reservas.");
+        }
+
         if (viaje.getFechaHoraIda().isBefore(ZonedDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se pueden realizar reservas para viajes que ya han iniciado o finalizado.");

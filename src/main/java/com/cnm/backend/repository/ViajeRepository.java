@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,4 +29,16 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long>, JpaSpecific
      * Obtiene una lista paginada de viajes filtrando por su estado (activo/cerrado).
      */
     Page<Viaje> findByEstado(Estado estado, Pageable pageable);
+
+    /**
+     * Obtiene la lista completa de viajes que no han sido archivados (activos o cerrados).
+     * Utilizado para la gestión en el panel de administración.
+     */
+    List<Viaje> findByArchivadoFalseOrderByFechaHoraIdaDesc();
+
+    /**
+     * Obtiene la lista completa de viajes archivados.
+     * Utilizado para la sección de viajes archivados en el Frontend.
+     */
+    List<Viaje> findByArchivadoTrueOrderByFechaHoraIdaDesc();
 }
