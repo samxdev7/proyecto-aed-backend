@@ -1,5 +1,6 @@
 package com.cnm.backend.controllers;
 
+import com.cnm.backend.dto.auth.GoogleAuthRequestDto;
 import com.cnm.backend.dto.auth.LoginRequestDto;
 import com.cnm.backend.dto.auth.LoginResponseDto;
 import com.cnm.backend.dto.auth.RegistroUsuarioRequestDto;
@@ -34,6 +35,13 @@ public class AuthController {
     public ResponseEntity<LoginResponseDto> login(
             @Valid @RequestBody LoginRequestDto request) {
         LoginResponseDto response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<LoginResponseDto> loginConGoogle(
+            @Valid @RequestBody GoogleAuthRequestDto request) {
+        LoginResponseDto response = authService.autenticarConGoogle(request);
         return ResponseEntity.ok(response);
     }
 }
