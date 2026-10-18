@@ -72,6 +72,9 @@ public class ReservaService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
+        // Regla de negocio: el perfil debe estar completo para poder reservar.
+        validarPerfilCompleto(usuario);
+
         Viaje viaje = viajeRepository.findById(request.idViaje())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Viaje con ID " + request.idViaje() + " no encontrado"));
@@ -373,5 +376,29 @@ public class ReservaService {
                 a.getTipoIdentificacion(),
                 a.getNumeroIdentificacion()
         );
+    }
+
+    /**
+     * Verifica que el perfil del usuario tenga todos los campos obligatorios completos
+     * antes de permitir una reserva. Lanza {@link IncompleteProfileException} con la
+     * lista de campos faltantes si el perfil no está completo.
+     */
+    private void validarPerfilCompleto(Usuario usuario) {
+        List<String> faltantes = new ArrayList<>();
+        if (usuario.getPrimerNombre() == null || usuario.getPrimerNombre().isBlank()) {
+            faltantes.add("primerNombre");
+        }
+        if (usuario.getPrimerApellido() == null || usuario.getPrimerApellido().isBlank()) {
+            faltantes.add("primerApellido");
+        }
+        if (usuario.getNumeroIdentificacion() == null || usuario.getNumeroIdentificacion().isBlank()) {
+            faltantes.add("numeroIdentificacion");
+        }
+        if (usuario.getNacionalidad() == null || usuario.getNacionalidad().isBlank()) {
+            faltantes.add("nacionalidad");
+        }
+        if (!faltantes.isEmpty()) {
+            throw new IncompleteProfileException(faltantes);
+        }
     }
 }

@@ -12,13 +12,13 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-    @Column(name = "primer_nombre", nullable = false, length = 50)
+    @Column(name = "primer_nombre", length = 50)
     private String primerNombre;
 
     @Column(name = "segundo_nombre", length = 50)
     private String segundoNombre;
 
-    @Column(name = "primer_apellido", nullable = false, length = 50)
+    @Column(name = "primer_apellido", length = 50)
     private String primerApellido;
 
     @Column(name = "segundo_apellido", length = 50)
@@ -37,16 +37,16 @@ public class Usuario {
     @Column(name = "telefono", length = 20)
     private String telefono;
 
-    @Column(name = "sexo", nullable = false, length = 10)
+    @Column(name = "sexo", length = 10)
     private String sexo;
 
-    @Column(name = "nacionalidad", nullable = false, length = 50)
+    @Column(name = "nacionalidad", length = 50)
     private String nacionalidad;
 
-    @Column(name = "tipo_identificacion", nullable = false, length = 20)
+    @Column(name = "tipo_identificacion", length = 20)
     private String tipoIdentificacion;
 
-    @Column(name = "numero_identificacion", nullable = false, unique = true, length = 50)
+    @Column(name = "numero_identificacion", unique = true, length = 50)
     private String numeroIdentificacion;
 
     @Column(name = "notificaciones_habilitadas", nullable = false)
@@ -89,10 +89,22 @@ public class Usuario {
     public void setFechaRegistro(ZonedDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
 
     public String getNombreCompleto() {
-        StringBuilder sb = new StringBuilder(primerNombre);
-        if (segundoNombre != null && !segundoNombre.isBlank()) sb.append(" ").append(segundoNombre);
-        sb.append(" ").append(primerApellido);
-        if (segundoApellido != null && !segundoApellido.isBlank()) sb.append(" ").append(segundoApellido);
-        return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        if (primerNombre != null && !primerNombre.isBlank()) {
+            sb.append(primerNombre);
+        }
+        if (segundoNombre != null && !segundoNombre.isBlank()) {
+            if (!sb.isEmpty()) sb.append(" ");
+            sb.append(segundoNombre);
+        }
+        if (primerApellido != null && !primerApellido.isBlank()) {
+            if (!sb.isEmpty()) sb.append(" ");
+            sb.append(primerApellido);
+        }
+        if (segundoApellido != null && !segundoApellido.isBlank()) {
+            if (!sb.isEmpty()) sb.append(" ");
+            sb.append(segundoApellido);
+        }
+        return sb.isEmpty() ? correo : sb.toString();
     }
 }
