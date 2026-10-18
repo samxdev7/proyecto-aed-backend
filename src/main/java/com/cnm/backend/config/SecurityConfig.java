@@ -71,7 +71,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // Públicos
-                .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login", "/auth/google").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes", "/viajes/*/campos-formulario").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes/archivados").permitAll()
 

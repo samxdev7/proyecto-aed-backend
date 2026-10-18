@@ -53,6 +53,10 @@ public class JwtService {
         }
     }
 
+    public Claims extractAllClaims(String token) {
+        return extractClaims(token);
+    }
+
     private Claims extractClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)
