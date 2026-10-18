@@ -1,6 +1,8 @@
 package com.cnm.backend.controllers;
 
 import com.cnm.backend.dto.common.ErrorResponseDto;
+import com.cnm.backend.dto.common.IncompleteProfileErrorDto;
+import com.cnm.backend.service.IncompleteProfileException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +72,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getStatusCode()).body(errorResponse);
     }
 
+    /**
+     * Perfil incompleto: el usuario intentó reservar sin haber completado sus datos.
+     * Retorna 403 con el contrato JSON esperado por el frontend.
+     */
+    @ExceptionHandler(IncompleteProfileException.class)
+    public ResponseEntity<IncompleteProfileErrorDto> handleIncompleteProfile(
+            IncompleteProfileException ex) {
+        IncompleteProfileErrorDto body = new IncompleteProfileErrorDto(ex.getRequiredFieldsMissing());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGenericException(
             Exception ex, HttpServletRequest request) {
@@ -82,3 +95,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }
+

@@ -54,19 +54,11 @@ public class AuthService {
         }
 
         Usuario usuario = new Usuario();
-        usuario.setPrimerNombre(request.primerNombre());
-        usuario.setSegundoNombre(request.segundoNombre());
-        usuario.setPrimerApellido(request.primerApellido());
-        usuario.setSegundoApellido(request.segundoApellido());
+        // Solo credenciales — el perfil se completa después vía PATCH /usuarios/me
         usuario.setCorreo(request.correo());
         usuario.setContrasenaHash(passwordEncoder.encode(request.contrasena()));
         usuario.setRol(Rol.cliente);
-        usuario.setTelefono(request.telefono());
-        usuario.setSexo(request.sexo());
-        usuario.setNacionalidad(request.nacionalidad());
-        usuario.setTipoIdentificacion(request.tipoIdentificacion());
-        usuario.setNumeroIdentificacion(request.numeroIdentificacion());
-        usuario.setNotificacionesHabilitadas(request.notificacionesHabilitadas());
+        usuario.setNotificacionesHabilitadas(true);
         usuario.setFechaRegistro(ZonedDateTime.now());
 
         usuarioRepository.save(usuario);
