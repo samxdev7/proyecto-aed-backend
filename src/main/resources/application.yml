@@ -10,12 +10,13 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: 2
+    default-schemas: public
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        default_schema: app
+        default_schema: public
 logging:
   level:
     com.cnm.backend: INFO
