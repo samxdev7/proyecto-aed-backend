@@ -26,5 +26,6 @@ public record ViajeDetalleDto(
     String estado,
     ZonedDateTime fechaCreacion,
     String imagenUrl,
-    String equipo
+    String equipo,
+    Boolean archivado
 ) {}

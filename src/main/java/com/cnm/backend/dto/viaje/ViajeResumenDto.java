@@ -20,5 +20,6 @@ public record ViajeResumenDto(
     Integer cuposMaximos,
     Integer cuposDisponibles,
     String estado,
-    String imagenUrl
+    String imagenUrl,
+    Boolean archivado
 ) {}

@@ -66,6 +66,8 @@ public class ViajeService {
         final Estado est = estado;
         Specification<Viaje> spec = (root, query, cb) -> {
             List<Predicate> condiciones = new ArrayList<>();
+            // Catálogo público solo muestra viajes no archivados
+            condiciones.add(cb.isFalse(root.get("archivado")));
             if (dif != null && !dif.isBlank()) {
                 condiciones.add(cb.equal(root.get("dificultad"), dif));
             }
@@ -128,6 +130,7 @@ public class ViajeService {
         viaje.setEquipo(request.equipo());
         viaje.setEstado(Estado.activo);
         viaje.setFechaCreacion(ZonedDateTime.now());
+        viaje.setArchivado(false);
 
         Viaje guardado = viajeRepository.save(viaje);
         return mapToDetalleDto(guardado);
@@ -191,21 +194,54 @@ public class ViajeService {
     }
 
     /**
-     * C6: Eliminación controlada de un viaje verificando que no existan reservas activas (RF2).
+     * C6: Archiva un viaje existente (borrado lógico) (RF2).
+     * Regla de negocio: El viaje DEBE estar en estado 'cerrado' para poder archivarse.
      */
     @Transactional
-    public void eliminarViaje(Long idViaje) {
+    public ViajeDetalleDto archivarViaje(Long idViaje) {
         Viaje viaje = buscarViajePorId(idViaje);
 
-        long reservasPendientes = reservaRepository.countByIdViajeAndEstado(idViaje, "pendiente");
-        long reservasAprobadas = reservaRepository.countByIdViajeAndEstado(idViaje, "aprobada");
-
-        if (reservasPendientes > 0 || reservasAprobadas > 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "No se puede eliminar el viaje porque tiene reservas activas o pendientes asociadas.");
+        if (viaje.getEstado() != Estado.cerrado) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Para archivar un viaje, su estado debe ser 'cerrado'.");
         }
 
-        viajeRepository.delete(viaje);
+        viaje.setArchivado(true);
+        Viaje guardado = viajeRepository.save(viaje);
+        return mapToDetalleDto(guardado);
+    }
+
+    /**
+     * Desarchiva un viaje previamente archivado, devolviéndolo al catálogo/panel administrativo (RF2).
+     */
+    @Transactional
+    public ViajeDetalleDto desarchivarViaje(Long idViaje) {
+        Viaje viaje = buscarViajePorId(idViaje);
+        viaje.setArchivado(false);
+        Viaje guardado = viajeRepository.save(viaje);
+        return mapToDetalleDto(guardado);
+    }
+
+    /**
+     * Obtiene la lista completa de viajes que no han sido archivados (activos o cerrados).
+     * Utilizado en el panel de administrador para visualización y gestión en lista directa.
+     */
+    @Transactional(readOnly = true)
+    public List<ViajeResumenDto> listarViajesNoArchivados() {
+        return viajeRepository.findByArchivadoFalseOrderByFechaHoraIdaDesc().stream()
+                .map(this::mapToResumenDto)
+                .toList();
+    }
+
+    /**
+     * Obtiene la lista completa de viajes que han sido archivados.
+     * Utilizado en la sección de viajes archivados del Frontend.
+     */
+    @Transactional(readOnly = true)
+    public List<ViajeResumenDto> listarViajesArchivados() {
+        return viajeRepository.findByArchivadoTrueOrderByFechaHoraIdaDesc().stream()
+                .map(this::mapToResumenDto)
+                .toList();
     }
 
     private Viaje buscarViajePorId(Long idViaje) {
@@ -235,7 +271,8 @@ public class ViajeService {
                 viaje.getCuposMaximos(),
                 viaje.getCuposDisponibles(),
                 viaje.getEstado() != null ? viaje.getEstado().name() : "activo",
-                viaje.getImagenUrl()
+                viaje.getImagenUrl(),
+                viaje.getArchivado() != null ? viaje.getArchivado() : false
         );
     }
 
@@ -259,7 +296,8 @@ public class ViajeService {
                 viaje.getEstado() != null ? viaje.getEstado().name() : "activo",
                 viaje.getFechaCreacion(),
                 viaje.getImagenUrl(),
-                viaje.getEquipo()
+                viaje.getEquipo(),
+                viaje.getArchivado() != null ? viaje.getArchivado() : false
         );
     }
 }

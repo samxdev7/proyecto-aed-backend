@@ -13,7 +13,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 /**
  * Controlador REST para el Módulo de Viajes.
@@ -52,6 +52,25 @@ public class ViajeController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(viajeService.listarViajes(dificultad, fechaDesde, estado, page, size));
+    }
+
+    /**
+     * C2a: GET /viajes/no-archivados [Administrador]
+     * Obtiene la lista completa de viajes que no han sido archivados (activos o cerrados)
+     * para la gestión en el panel de administración. Siempre retorna una lista directa.
+     */
+    @GetMapping("/no-archivados")
+    public ResponseEntity<List<ViajeResumenDto>> listarViajesNoArchivados() {
+        return ResponseEntity.ok(viajeService.listarViajesNoArchivados());
+    }
+
+    /**
+     * C2b: GET /viajes/archivados [Público / Frontend]
+     * Obtiene la lista completa de viajes archivados para la sección de viajes archivados del Frontend.
+     */
+    @GetMapping("/archivados")
+    public ResponseEntity<List<ViajeResumenDto>> listarViajesArchivados() {
+        return ResponseEntity.ok(viajeService.listarViajesArchivados());
     }
 
     /**
@@ -99,12 +118,20 @@ public class ViajeController {
     }
 
     /**
-     * C6: DELETE /viajes/{idViaje} [Administrador]
-     * Elimina un viaje, solo si no tiene reservas pendientes o aprobadas asociadas (RF2).
+     * C6: PATCH /viajes/{idViaje}/archivar [Administrador]
+     * Archiva un viaje (borrado lógico). Solo permitido si el viaje está cerrado.
      */
-    @DeleteMapping("/{idViaje}")
-    public ResponseEntity<Void> eliminarViaje(@PathVariable Long idViaje) {
-        viajeService.eliminarViaje(idViaje);
-        return ResponseEntity.noContent().build();
+    @PatchMapping("/{idViaje}/archivar")
+    public ResponseEntity<ViajeDetalleDto> archivarViaje(@PathVariable Long idViaje) {
+        return ResponseEntity.ok(viajeService.archivarViaje(idViaje));
+    }
+
+    /**
+     * C7: PATCH /viajes/{idViaje}/desarchivar [Administrador]
+     * Desarchiva un viaje previamente archivado, restaurándolo al flujo de gestión.
+     */
+    @PatchMapping("/{idViaje}/desarchivar")
+    public ResponseEntity<ViajeDetalleDto> desarchivarViaje(@PathVariable Long idViaje) {
+        return ResponseEntity.ok(viajeService.desarchivarViaje(idViaje));
     }
 }
