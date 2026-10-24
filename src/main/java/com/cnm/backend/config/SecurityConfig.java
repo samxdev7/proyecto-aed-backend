@@ -70,6 +70,8 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/actuator/health").permitAll()
+                
                 // Públicos
                 .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login", "/auth/google").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes", "/viajes/*/campos-formulario").permitAll()
