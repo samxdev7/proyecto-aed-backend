@@ -13,13 +13,12 @@ public class CnmBackendApplication {
         Dotenv dotenv = Dotenv.configure()
             .ignoreIfMissing()
             .load();
-        System.setProperty("DB_URL", dotenv.get("DB_URL"));
-        System.setProperty("DB_USER", dotenv.get("DB_USER"));
-        System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
-        System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
-        // Opcional: restringir orígenes CORS en producción (lista separada por comas).
-        String corsOrigenes = dotenv.get("CORS_ORIGINS");
-        if (corsOrigenes != null) System.setProperty("CORS_ORIGINS", corsOrigenes);
-            SpringApplication.run(CnmBackendApplication.class, args);
+
+        dotenv.entries(Dotenv.Filter.DECLARED_IN_ENV_FILE).forEach(e -> { 
+            if (e.getKey() != null && e.getValue() != null)
+                System.setProperty(e.getKey(), e.getValue());
+        });
+
+        SpringApplication.run(CnmBackendApplication.class, args);
 	}
 }
