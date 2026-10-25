@@ -21,16 +21,13 @@ public class Viaje {
     @Column(name = "id_administrador_creador", nullable = false, columnDefinition = "bigint REFERENCES app.usuario(id_usuario)")
     private Long idAdministradorCreador;
 
-    @Column(name = "titulo", nullable = false, length = 50)
+    @Column(name = "titulo", nullable = false, length = 200)
     private String titulo;
 
-    @Column(name = "descripcion", length = 50)
+    @Column(name = "descripcion", columnDefinition = "text")
     private String descripcion;
 
-    @Column(name = "itinerario", length = 50)
-    private String itinerario;
-
-    @Column(name = "dificultad", length = 50)
+    @Column(name = "dificultad", length = 20)
     private String dificultad;
 
     @Column(name = "fecha_hora_ida", nullable = false)
@@ -39,11 +36,8 @@ public class Viaje {
     @Column(name = "fecha_hora_vuelta", nullable = false)
     private ZonedDateTime fechaHoraVuelta;
 
-    @Column(name = "punto_encuentro", nullable = false, length = 50)
+    @Column(name = "punto_encuentro", nullable = false, columnDefinition = "text")
     private String puntoEncuentro;
-
-    @Column(name = "inclusiones_adicionales", length = 50)
-    private String inclusionesAdicionales;
 
     @Positive
     @Digits(integer = 12, fraction = 2)
@@ -63,17 +57,14 @@ public class Viaje {
     @Column(name = "cupos_disponibles", nullable = false)
     private Integer cuposDisponibles;
 
-    @Column(name = "enlace_whatsapp", length = 50)
+    @Column(name = "enlace_whatsapp", columnDefinition = "text")
     private String enlaceWhatsApp;
 
     @Column(name = "imagen_url", length = 500)
     private String imagenUrl;
 
-    @Column(name = "equipo", columnDefinition = "text")
-    private String equipo;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 50)
+    @Column(name = "estado", nullable = false, length = 20)
     private Estado estado;
 
     @Column(name = "fecha_creacion", nullable = false)
@@ -92,8 +83,6 @@ public class Viaje {
     public void setTitulo(String titulo) { this.titulo = titulo; }
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-    public String getItinerario() { return itinerario; }
-    public void setItinerario(String itinerario) { this.itinerario = itinerario; }
     public String getDificultad() { return dificultad; }
     public void setDificultad(String dificultad) { this.dificultad = dificultad; }
     public ZonedDateTime getFechaHoraIda() { return fechaHoraIda; }
@@ -102,8 +91,6 @@ public class Viaje {
     public void setFechaHoraVuelta(ZonedDateTime fechaHoraVuelta) { this.fechaHoraVuelta = fechaHoraVuelta; }
     public String getPuntoEncuentro() { return puntoEncuentro; }
     public void setPuntoEncuentro(String puntoEncuentro) { this.puntoEncuentro = puntoEncuentro; }
-    public String getInclusionesAdicionales() { return inclusionesAdicionales; }
-    public void setInclusionesAdicionales(String inclusionesAdicionales) { this.inclusionesAdicionales = inclusionesAdicionales; }
     public BigDecimal getMontoTotal() { return montoTotal; }
     public void setMontoTotal(BigDecimal montoTotal) { this.montoTotal = montoTotal; }
     public BigDecimal getMontoReserva() { return montoReserva; }
@@ -116,8 +103,6 @@ public class Viaje {
     public void setEnlaceWhatsApp(String enlaceWhatsApp) { this.enlaceWhatsApp = enlaceWhatsApp; }
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
-    public String getEquipo() { return equipo; }
-    public void setEquipo(String equipo) { this.equipo = equipo; }
     public Estado getEstado() { return estado; }
     public void setEstado(Estado estado) { this.estado = estado; }
     public ZonedDateTime getFechaCreacion() { return fechaCreacion; }

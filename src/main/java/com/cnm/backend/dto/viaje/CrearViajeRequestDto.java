@@ -21,8 +21,7 @@ public record CrearViajeRequestDto(
     String titulo,
 
     String descripcion,
-    String itinerario,
-
+ 
     @NotBlank(message = "La dificultad es obligatoria")
     @Pattern(regexp = "^(Baja|Media|Alta|Extrema)$", message = "La dificultad debe ser 'Baja', 'Media', 'Alta' o 'Extrema'")
     String dificultad,
@@ -36,8 +35,6 @@ public record CrearViajeRequestDto(
 
     @NotBlank(message = "El punto de encuentro es obligatorio")
     String puntoEncuentro,
-
-    String inclusionesAdicionales,
 
     @NotNull(message = "El monto total es obligatorio")
     @Positive(message = "El monto total debe ser mayor a cero")
@@ -55,8 +52,5 @@ public record CrearViajeRequestDto(
 
     /** Ruta o URL de la imagen principal del viaje (catálogo público). */
     @Size(max = 500, message = "La URL de imagen no debe superar 500 caracteres")
-    String imagenUrl,
-
-    /** Equipo requerido para el viaje, una línea por elemento. */
-    String equipo
+    String imagenUrl
 ) {}

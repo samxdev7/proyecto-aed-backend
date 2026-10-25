@@ -47,6 +47,7 @@ public class ReservaService {
     private final RespuestaFormularioRepository respuestaFormularioRepository;
     private final CampoFormularioRepository campoFormularioRepository;
     private final NotificacionService notificacionService;
+    private final EmailService emailService;
 
     public ReservaService(ReservaRepository reservaRepository,
                           ViajeRepository viajeRepository,
@@ -54,7 +55,8 @@ public class ReservaService {
                           AcompananteRepository acompananteRepository,
                           RespuestaFormularioRepository respuestaFormularioRepository,
                           CampoFormularioRepository campoFormularioRepository,
-                          NotificacionService notificacionService) {
+                          NotificacionService notificacionService,
+                          EmailService emailService) {
         this.reservaRepository = reservaRepository;
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
@@ -62,6 +64,7 @@ public class ReservaService {
         this.respuestaFormularioRepository = respuestaFormularioRepository;
         this.campoFormularioRepository = campoFormularioRepository;
         this.notificacionService = notificacionService;
+        this.emailService = emailService;
     }
 
     /**
@@ -172,6 +175,11 @@ public class ReservaService {
                 respuestasDto.add(new RespuestaFormularioDto(rDto.idCampo(), etiqueta, rDto.valorRespuesta()));
             }
         }
+
+        // Notificar a todos los administradores acumulando las inscripciones del viaje
+        long totalInscritos = reservaRepository.countReservasActivas(viaje.getIdViaje())
+                + reservaRepository.countAcompanantesActivos(viaje.getIdViaje());
+        notificacionService.notificarNuevaReservaAdmin(viaje, (int) totalInscritos);
 
         return new ReservaDetalleDto(
                 reservaGuardada.getIdReserva(),
@@ -316,17 +324,28 @@ public class ReservaService {
         reserva.setFechaRevision(ZonedDateTime.now());
         reservaRepository.save(reserva);
 
-        // Notificación al usuario con enlace de WhatsApp (RF10, RF11)
+        // Notificación al usuario dirigiendo al correo electrónico (sin enlace de WhatsApp directo)
         Viaje viaje = viajeRepository.findById(reserva.getIdViaje()).orElse(null);
-        String enlaceWa = (viaje != null && viaje.getEnlaceWhatsApp() != null)
-                ? " Enlace de grupo: " + viaje.getEnlaceWhatsApp()
-                : "";
+        String tituloViaje = (viaje != null && viaje.getTitulo() != null) ? viaje.getTitulo() : ("#" + idReserva);
 
         notificacionService.crearNotificacion(
                 reserva.getIdUsuario(),
                 "reserva_aprobada",
-                "¡Tu reserva #" + idReserva + " ha sido aprobada!" + enlaceWa
+                "¡Tu cupo ha sido aceptado para el viaje: " + tituloViaje + "! Por favor dirígete a tu correo electrónico para unirte al grupo de WhatsApp."
         );
+
+        // Envío de correo de felicitación con el enlace al grupo de WhatsApp
+        Usuario usuario = usuarioRepository.findById(reserva.getIdUsuario()).orElse(null);
+        if (usuario != null && usuario.getCorreo() != null) {
+            String enlaceWa = (viaje != null) ? viaje.getEnlaceWhatsApp() : null;
+            emailService.enviarCorreoAprobacion(
+                    usuario.getCorreo(),
+                    usuario.getNombreCompleto(),
+                    tituloViaje,
+                    idReserva,
+                    enlaceWa
+            );
+        }
 
         return obtenerReservaPorId(idReserva, idAdmin, true);
     }
@@ -362,12 +381,25 @@ public class ReservaService {
             viajeRepository.save(viaje);
         }
 
-        // Notificar formalmente al cliente con el motivo del rechazo (RF4, RF9)
+        // Notificación formal al cliente dirigiendo al correo electrónico
+        String tituloViajeRechazo = (viaje != null && viaje.getTitulo() != null) ? viaje.getTitulo() : ("#" + idReserva);
         notificacionService.crearNotificacion(
                 reserva.getIdUsuario(),
                 "reserva_rechazada",
-                "Tu reserva #" + idReserva + " ha sido rechazada. Motivo: " + request.motivoRechazo()
+                "Tu cupo para el viaje: " + tituloViajeRechazo + " ha sido rechazado. Por favor revisa tu correo electrónico para conocer la justificación del rechazo."
         );
+
+        // Envío de correo con justificación del rechazo
+        Usuario usuarioRechazo = usuarioRepository.findById(reserva.getIdUsuario()).orElse(null);
+        if (usuarioRechazo != null && usuarioRechazo.getCorreo() != null) {
+            emailService.enviarCorreoRechazo(
+                    usuarioRechazo.getCorreo(),
+                    usuarioRechazo.getNombreCompleto(),
+                    tituloViajeRechazo,
+                    idReserva,
+                    request.motivoRechazo()
+            );
+        }
 
         return obtenerReservaPorId(idReserva, idAdmin, true);
     }

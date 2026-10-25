@@ -4,7 +4,9 @@ import com.cnm.backend.dto.common.PageResponseDto;
 import com.cnm.backend.dto.notificacion.NotificacionResponseDto;
 import com.cnm.backend.dto.notificacion.SuscripcionPushRequestDto;
 import com.cnm.backend.entity.Notificacion;
+import com.cnm.backend.entity.Rol;
 import com.cnm.backend.entity.Usuario;
+import com.cnm.backend.entity.Viaje;
 import com.cnm.backend.repository.NotificacionRepository;
 import com.cnm.backend.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
@@ -96,6 +98,41 @@ public class NotificacionService {
         return mapToDto(guardada);
     }
 
+    /**
+     * Notifica a todos los administradores sobre nuevas inscripciones a un viaje.
+     * Si ya existe una notificación para dicho viaje, se actualiza el conteo acumulativo,
+     * se actualiza la fecha a la actual y se marca como no leída para no saturar la bandeja.
+     */
+    @Transactional
+    public void notificarNuevaReservaAdmin(Viaje viaje, int totalInscritos) {
+        if (viaje == null) return;
+
+        List<Usuario> admins = usuarioRepository.findByRol(Rol.administrador);
+        if (admins.isEmpty()) return;
+
+        String mensaje = totalInscritos == 1
+                ? "1 persona se ha inscrito en el viaje: " + viaje.getTitulo()
+                : totalInscritos + " personas se han inscrito en el viaje: " + viaje.getTitulo();
+
+        for (Usuario admin : admins) {
+            Notificacion notificacion = notificacionRepository
+                    .findByIdUsuarioAndIdViajeAndTipo(admin.getIdUsuario(), viaje.getIdViaje(), "nueva_reserva")
+                    .orElseGet(() -> {
+                        Notificacion nueva = new Notificacion();
+                        nueva.setIdUsuario(admin.getIdUsuario());
+                        nueva.setIdViaje(viaje.getIdViaje());
+                        nueva.setTipo("nueva_reserva");
+                        return nueva;
+                    });
+
+            notificacion.setMensaje(mensaje);
+            notificacion.setFechaEnvio(ZonedDateTime.now());
+            notificacion.setLeida(false);
+
+            notificacionRepository.save(notificacion);
+        }
+    }
+
     private Usuario validarUsuario(Long idUsuario) {
         return usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -106,6 +143,7 @@ public class NotificacionService {
         return new NotificacionResponseDto(
                 n.getIdNotificacion(),
                 n.getIdUsuario(),
+                n.getIdViaje(),
                 n.getTipo(),
                 n.getMensaje(),
                 n.getFechaEnvio(),

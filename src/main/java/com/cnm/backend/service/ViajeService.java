@@ -115,19 +115,16 @@ public class ViajeService {
         viaje.setIdAdministradorCreador(idAdministrador);
         viaje.setTitulo(request.titulo());
         viaje.setDescripcion(request.descripcion());
-        viaje.setItinerario(request.itinerario());
         viaje.setDificultad(request.dificultad());
         viaje.setFechaHoraIda(request.fechaHoraIda());
         viaje.setFechaHoraVuelta(request.fechaHoraVuelta());
         viaje.setPuntoEncuentro(request.puntoEncuentro());
-        viaje.setInclusionesAdicionales(request.inclusionesAdicionales());
         viaje.setMontoTotal(request.montoTotal());
         viaje.setMontoReserva(request.montoReserva());
         viaje.setCuposMaximos(request.cuposMaximos());
         viaje.setCuposDisponibles(request.cuposMaximos());
         viaje.setEnlaceWhatsApp(request.enlaceWhatsApp());
         viaje.setImagenUrl(request.imagenUrl());
-        viaje.setEquipo(request.equipo());
         viaje.setEstado(Estado.activo);
         viaje.setFechaCreacion(ZonedDateTime.now());
         viaje.setArchivado(false);
@@ -158,19 +155,16 @@ public class ViajeService {
 
         viaje.setTitulo(request.titulo());
         viaje.setDescripcion(request.descripcion());
-        viaje.setItinerario(request.itinerario());
         viaje.setDificultad(request.dificultad());
         viaje.setFechaHoraIda(request.fechaHoraIda());
         viaje.setFechaHoraVuelta(request.fechaHoraVuelta());
         viaje.setPuntoEncuentro(request.puntoEncuentro());
-        viaje.setInclusionesAdicionales(request.inclusionesAdicionales());
         viaje.setMontoTotal(request.montoTotal());
         viaje.setMontoReserva(request.montoReserva());
         viaje.setCuposMaximos(request.cuposMaximos());
         viaje.setCuposDisponibles(request.cuposMaximos() - cuposOcupados);
         viaje.setEnlaceWhatsApp(request.enlaceWhatsApp());
         viaje.setImagenUrl(request.imagenUrl());
-        viaje.setEquipo(request.equipo());
 
         Viaje guardado = viajeRepository.save(viaje);
         return mapToDetalleDto(guardado);
@@ -282,12 +276,10 @@ public class ViajeService {
                 viaje.getIdAdministradorCreador(),
                 viaje.getTitulo(),
                 viaje.getDescripcion(),
-                viaje.getItinerario(),
                 viaje.getDificultad(),
                 viaje.getFechaHoraIda(),
                 viaje.getFechaHoraVuelta(),
                 viaje.getPuntoEncuentro(),
-                viaje.getInclusionesAdicionales(),
                 viaje.getMontoTotal(),
                 viaje.getMontoReserva(),
                 viaje.getCuposMaximos(),
@@ -296,7 +288,6 @@ public class ViajeService {
                 viaje.getEstado() != null ? viaje.getEstado().name() : "activo",
                 viaje.getFechaCreacion(),
                 viaje.getImagenUrl(),
-                viaje.getEquipo(),
                 viaje.getArchivado() != null ? viaje.getArchivado() : false
         );
     }

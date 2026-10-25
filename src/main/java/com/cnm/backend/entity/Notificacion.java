@@ -25,6 +25,9 @@ public class Notificacion {
     @Column(name = "id_usuario", nullable = false)
     private Long idUsuario;
 
+    @Column(name = "id_viaje")
+    private Long idViaje;
+
     @Column(name = "tipo", nullable = false, length = 30)
     private String tipo = "nuevo_viaje";
 
@@ -41,8 +44,14 @@ public class Notificacion {
 
     public Notificacion(Long idNotificacion, Long idUsuario, String tipo,
                         String mensaje, ZonedDateTime fechaEnvio, Boolean leida) {
+        this(idNotificacion, idUsuario, null, tipo, mensaje, fechaEnvio, leida);
+    }
+
+    public Notificacion(Long idNotificacion, Long idUsuario, Long idViaje, String tipo,
+                        String mensaje, ZonedDateTime fechaEnvio, Boolean leida) {
         this.idNotificacion = idNotificacion;
         this.idUsuario = idUsuario;
+        this.idViaje = idViaje;
         this.tipo = tipo != null ? tipo : "nuevo_viaje";
         this.mensaje = mensaje;
         this.fechaEnvio = fechaEnvio != null ? fechaEnvio : ZonedDateTime.now();
@@ -65,6 +74,14 @@ public class Notificacion {
 
     public void setIdUsuario(Long idUsuario) {
         this.idUsuario = idUsuario;
+    }
+
+    public Long getIdViaje() {
+        return idViaje;
+    }
+
+    public void setIdViaje(Long idViaje) {
+        this.idViaje = idViaje;
     }
 
     public String getTipo() {

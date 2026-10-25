@@ -6,6 +6,10 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
   flyway:
     locations: classpath:db/migration
     baseline-on-migrate: true
@@ -16,22 +20,37 @@ spring:
     properties:
       hibernate:
         default_schema: app
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:true}
 logging:
   level:
     com.cnm.backend: INFO
 
 app:
+  mail:
+    from: ${MAIL_FROM:cnmontanismo@gmail.com}
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: 3600000
   google:
-    client-id: ${GOOGLE_CLIENT_ID:504660215527-0gml5batfg23p6llcku19ss38f0lm3pr.apps.googleusercontent.com}
+    client-id: ${GOOGLE_CLIENT_ID}
   supabase:
-    url: ${SUPABASE_URL:https://gnotslrwwptblfoofgsx.supabase.co}
-    anon-key: ${SUPABASE_ANON_KEY:sb_publishable_R-yNJTs0N1M_Z1-taZQ1fg_R3m187W2}
+    url: ${SUPABASE_URL}
+    anon-key: ${SUPABASE_ANON_KEY}
   cors:
     # "*" = cualquier origen (dev out-of-box); en producción: lista separada por comas.
     origins: ${CORS_ORIGINS:*}
 
 server:
   port: ${PORT:8080}
+  servlet:
+    context-path: /api
