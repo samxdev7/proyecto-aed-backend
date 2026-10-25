@@ -21,16 +21,16 @@ public class Viaje {
     @Column(name = "id_administrador_creador", nullable = false, columnDefinition = "bigint REFERENCES app.usuario(id_usuario)")
     private Long idAdministradorCreador;
 
-    @Column(name = "titulo", nullable = false, length = 50)
+    @Column(name = "titulo", nullable = false, length = 200)
     private String titulo;
 
-    @Column(name = "descripcion", length = 50)
+    @Column(name = "descripcion", columnDefinition = "text")
     private String descripcion;
 
-    @Column(name = "itinerario", length = 50)
+    @Column(name = "itinerario", columnDefinition = "text")
     private String itinerario;
 
-    @Column(name = "dificultad", length = 50)
+    @Column(name = "dificultad", length = 20)
     private String dificultad;
 
     @Column(name = "fecha_hora_ida", nullable = false)
@@ -39,10 +39,10 @@ public class Viaje {
     @Column(name = "fecha_hora_vuelta", nullable = false)
     private ZonedDateTime fechaHoraVuelta;
 
-    @Column(name = "punto_encuentro", nullable = false, length = 50)
+    @Column(name = "punto_encuentro", nullable = false, columnDefinition = "text")
     private String puntoEncuentro;
 
-    @Column(name = "inclusiones_adicionales", length = 50)
+    @Column(name = "inclusiones_adicionales", columnDefinition = "text")
     private String inclusionesAdicionales;
 
     @Positive
@@ -63,7 +63,7 @@ public class Viaje {
     @Column(name = "cupos_disponibles", nullable = false)
     private Integer cuposDisponibles;
 
-    @Column(name = "enlace_whatsapp", length = 50)
+    @Column(name = "enlace_whatsapp", columnDefinition = "text")
     private String enlaceWhatsApp;
 
     @Column(name = "imagen_url", length = 500)
@@ -73,7 +73,7 @@ public class Viaje {
     private String equipo;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 50)
+    @Column(name = "estado", nullable = false, length = 20)
     private Estado estado;
 
     @Column(name = "fecha_creacion", nullable = false)

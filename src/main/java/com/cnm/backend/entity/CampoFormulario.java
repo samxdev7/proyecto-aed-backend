@@ -26,10 +26,10 @@ public class CampoFormulario {
     @Column(name = "tipo_campo", nullable = false, length = 20)
     private String tipoCampo = "texto";
 
-    @Column(name = "etiqueta_pregunta", nullable = false, length = 100)
+    @Column(name = "etiqueta_pregunta", nullable = false, length = 300)
     private String etiquetaPregunta;
 
-    @Column(name = "opciones_respuesta", columnDefinition = "json")
+    @Column(name = "opciones_respuesta", columnDefinition = "text")
     private String opcionesRespuesta;
 
     @Column(name = "orden", nullable = false)
