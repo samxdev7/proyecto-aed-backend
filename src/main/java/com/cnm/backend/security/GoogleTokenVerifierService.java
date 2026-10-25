@@ -33,12 +33,12 @@ public class GoogleTokenVerifierService {
 
     public GoogleTokenVerifierService(
             @Value("${app.google.client-id:}") String expectedClientId,
-            @Value("${app.supabase.url:https://gnotslrwwptblfoofgsx.supabase.co}") String supabaseUrl,
-            @Value("${app.supabase.anon-key:sb_publishable_R-yNJTs0N1M_Z1-taZQ1fg_R3m187W2}") String supabaseAnonKey,
+            @Value("${app.supabase.url:}") String supabaseUrl,
+            @Value("${app.supabase.anon-key:}") String supabaseAnonKey,
             JwtService jwtService) {
         this.expectedClientId = expectedClientId;
-        this.supabaseUrl = supabaseUrl != null && !supabaseUrl.isBlank() ? supabaseUrl : "https://gnotslrwwptblfoofgsx.supabase.co";
-        this.supabaseAnonKey = supabaseAnonKey != null && !supabaseAnonKey.isBlank() ? supabaseAnonKey : "sb_publishable_R-yNJTs0N1M_Z1-taZQ1fg_R3m187W2";
+        this.supabaseUrl = supabaseUrl != null ? supabaseUrl.trim() : "";
+        this.supabaseAnonKey = supabaseAnonKey != null ? supabaseAnonKey.trim() : "";
         this.restClient = RestClient.create();
         this.jwtService = jwtService;
     }
@@ -82,6 +82,9 @@ public class GoogleTokenVerifierService {
     }
 
     private GoogleUserInfo verificarConSupabase(String token) {
+        if (supabaseUrl.isBlank() || supabaseAnonKey.isBlank()) {
+            return null;
+        }
         try {
             Map<String, Object> body = restClient.get()
                     .uri(supabaseUrl + "/auth/v1/user")
