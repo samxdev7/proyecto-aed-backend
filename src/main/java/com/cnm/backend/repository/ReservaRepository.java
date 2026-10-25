@@ -4,6 +4,8 @@ import com.cnm.backend.entity.Reserva;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -56,4 +58,16 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
      * Indicador para estadísticas (RF6): cuenta reservas según estado en un viaje.
      */
     long countByIdViajeAndEstado(Long idViaje, String estado);
+
+    /**
+     * Cuenta las reservas activas (pendientes o aprobadas) asociadas a un viaje.
+     */
+    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.idViaje = :idViaje AND r.estado IN ('pendiente', 'aprobada')")
+    long countReservasActivas(@Param("idViaje") Long idViaje);
+
+    /**
+     * Cuenta los acompañantes en reservas activas (pendientes o aprobadas) asociadas a un viaje.
+     */
+    @Query("SELECT COUNT(a) FROM Acompanante a WHERE a.idReserva IN (SELECT r.idReserva FROM Reserva r WHERE r.idViaje = :idViaje AND r.estado IN ('pendiente', 'aprobada'))")
+    long countAcompanantesActivos(@Param("idViaje") Long idViaje);
 }

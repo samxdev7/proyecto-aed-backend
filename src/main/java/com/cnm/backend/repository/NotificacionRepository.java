@@ -29,4 +29,9 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Long
      * Busca una notificación específica asegurando que pertenezca al usuario autenticado (Endpoint F2).
      */
     Optional<Notificacion> findByIdNotificacionAndIdUsuario(Long idNotificacion, Long idUsuario);
+
+    /**
+     * Busca la notificación existente de un viaje específico para un usuario (usado para acumular notificaciones a admins).
+     */
+    Optional<Notificacion> findByIdUsuarioAndIdViajeAndTipo(Long idUsuario, Long idViaje, String tipo);
 }

@@ -9,8 +9,20 @@ import java.time.ZonedDateTime;
 public record NotificacionResponseDto(
     Long idNotificacion,
     Long idUsuario,
+    Long idViaje,
     String tipo,
     String mensaje,
     ZonedDateTime fechaEnvio,
     boolean leida
-) {}
+) {
+    public NotificacionResponseDto(
+        Long idNotificacion,
+        Long idUsuario,
+        String tipo,
+        String mensaje,
+        ZonedDateTime fechaEnvio,
+        boolean leida
+    ) {
+        this(idNotificacion, idUsuario, null, tipo, mensaje, fechaEnvio, leida);
+    }
+}

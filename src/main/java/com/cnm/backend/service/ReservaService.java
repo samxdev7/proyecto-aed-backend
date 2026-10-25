@@ -173,6 +173,11 @@ public class ReservaService {
             }
         }
 
+        // Notificar a todos los administradores acumulando las inscripciones del viaje
+        long totalInscritos = reservaRepository.countReservasActivas(viaje.getIdViaje())
+                + reservaRepository.countAcompanantesActivos(viaje.getIdViaje());
+        notificacionService.notificarNuevaReservaAdmin(viaje, (int) totalInscritos);
+
         return new ReservaDetalleDto(
                 reservaGuardada.getIdReserva(),
                 usuario.getIdUsuario(),

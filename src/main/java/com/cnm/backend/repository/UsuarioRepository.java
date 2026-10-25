@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -40,4 +41,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
      * Obtiene una lista paginada de usuarios filtrando por su rol (Endpoint B5).
      */
     Page<Usuario> findByRol(Rol rol, Pageable pageable);
+
+    /**
+     * Obtiene todos los usuarios con un rol específico (e.g. administradores).
+     */
+    List<Usuario> findByRol(Rol rol);
 }
