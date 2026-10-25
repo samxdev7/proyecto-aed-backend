@@ -47,10 +47,10 @@ public class Reserva {
     @Column(name = "numero_referencia_pago", length = 50)
     private String numeroReferenciaPago;
 
-    @Column(name = "captura_comprobante_url")
+    @Column(name = "captura_comprobante_url", columnDefinition = "TEXT")
     private String capturaComprobanteUrl;
 
-    @Column(name = "motivo_rechazo")
+    @Column(name = "motivo_rechazo", columnDefinition = "TEXT")
     private String motivoRechazo;
 
     @Column(name = "fecha_revision")
