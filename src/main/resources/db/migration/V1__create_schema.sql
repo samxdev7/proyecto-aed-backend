@@ -31,18 +31,17 @@ CREATE TABLE viaje (
     id_administrador_creador    BIGINT NOT NULL REFERENCES usuario(id_usuario),
     titulo                      VARCHAR(200) NOT NULL,
     descripcion                 TEXT,
-    itinerario                  TEXT,
     dificultad                  VARCHAR(20) NOT NULL
                                   CHECK (dificultad IN ('Baja', 'Media', 'Alta', 'Extrema')),
     fecha_hora_ida              TIMESTAMPTZ NOT NULL,
     fecha_hora_vuelta           TIMESTAMPTZ NOT NULL,
     punto_encuentro             TEXT NOT NULL,
-    inclusiones_adicionales     TEXT,
     monto_total                 NUMERIC(12,2) NOT NULL CHECK (monto_total > 0),
     monto_reserva               NUMERIC(12,2) NOT NULL CHECK (monto_reserva >= 0),
     cupos_maximos               INTEGER NOT NULL CHECK (cupos_maximos > 0),
     cupos_disponibles           INTEGER NOT NULL CHECK (cupos_disponibles >= 0),
     enlace_whatsapp             TEXT,
+    imagen_url                  TEXT,
     estado                      VARCHAR(10) NOT NULL DEFAULT 'activo'
                                   CHECK (estado IN ('activo', 'cerrado')),
     fecha_creacion              TIMESTAMPTZ NOT NULL DEFAULT NOW()

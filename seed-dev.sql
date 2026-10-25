@@ -20,97 +20,258 @@ INSERT INTO usuario (primer_nombre, segundo_nombre, primer_apellido, segundo_ape
 ('María',  'Fernanda','Torres','Chávez','maria.torres@example.com', '$2a$10$TqSwvkVFPqGVLrhDi/rn6uDNpzy6iWOhKk3p1S2QMblxeu8Xz6k5G', 'cliente',       '+505 8555-4433', 'F', 'Nicaragüense', 'cedula', '001-050797-0004D', true,  '2026-05-18T14:20:00-06:00');
 
 -- ---------- viajes (creados por el admin, id_usuario 1) ----------
-INSERT INTO viaje (id_administrador_creador, titulo, descripcion, itinerario, dificultad, fecha_hora_ida, fecha_hora_vuelta, punto_encuentro, inclusiones_adicionales, monto_total, monto_reserva, cupos_maximos, cupos_disponibles, enlace_whatsapp, estado, fecha_creacion, imagen_url, equipo) VALUES
+INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fecha_hora_ida, fecha_hora_vuelta, punto_encuentro, monto_total, monto_reserva, cupos_maximos, cupos_disponibles, enlace_whatsapp, imagen_url, estado, fecha_creacion) VALUES
 (1, 'Volcán Mombacho',
- 'Ascenso por la reserva natural del Volcán Mombacho con vistas panorámicas al lago.',
- E'Salida y traslado hacia senderos\nAscenso por senderos designados\nLlegada a la cumbre\nAlmuerzo y descanso\nRetorno al punto de encuentro',
+ 'Ascenso por la reserva natural del Volcán Mombacho con vistas panorámicas al lago.
+
+## Itinerario
+1. Salida y traslado hacia senderos
+2. Ascenso por senderos designados
+3. Llegada a la cumbre
+4. Almuerzo y descanso
+5. Retorno al punto de encuentro
+
+## Qué incluye
+- Entrada a la reserva natural Mombacho
+- Almuerzo al finalizar la ruta
+
+## Equipo recomendado
+- Botas de montaña
+- 2L de agua
+- Capa de lluvia
+- Snack energético',
  'Media', '2026-10-24T05:00:00-06:00', '2026-10-24T15:00:00-06:00',
  'Gasolinera UNO Metrocentro - 5:00 AM',
- E'Entrada a la reserva natural Mombacho\nAlmuerzo al finalizar la ruta',
- 1285.00, 550.00, 15, 14, NULL, 'activo', '2026-09-10T09:00:00-06:00',
+ 1285.00, 550.00, 15, 14, NULL,
  '/Presentaciones/viajes/mombacho/VolcanMombacho.jpg',
- E'Botas de montaña\n2L de agua\nCapa de lluvia\nSnack energético'),
+ 'activo', '2026-09-10T09:00:00-06:00'),
+
 (1, 'Cañón de Somoto',
- 'Recorrido por las paredes y piscinas naturales del Cañón de Somoto.',
- E'Salida desde Managua\nSesión informativa de seguridad\nRecorrido por el cañón\nPausa para nadar y almuerzo\nRegreso a Managua',
+ 'Recorrido por las paredes y piscinas naturales del Cañón de Somoto.
+
+## Itinerario
+1. Salida desde Managua
+2. Sesión informativa de seguridad
+3. Recorrido por el cañón
+4. Pausa para nadar y almuerzo
+5. Regreso a Managua
+
+## Qué incluye
+- Guías locales certificados del cañón
+- Equipo de flotación
+
+## Equipo recomendado
+- Zapatos antideslizantes
+- Protector solar
+- Ropa de cambio
+- Snack energético',
  'Baja', '2026-10-29T05:30:00-06:00', '2026-10-29T17:30:00-06:00',
  'Plaza El Sol, Somoto - 5:30 AM',
- E'Guías locales certificados del cañón\nEquipo de flotación',
- 1100.00, 450.00, 20, 17, NULL, 'activo', '2026-09-10T09:05:00-06:00',
+ 1100.00, 450.00, 20, 17, NULL,
  '/Presentaciones/viajes/somoto/canonsomoto.jpg',
- E'Zapatos antideslizantes\nProtector solar\nRopa de cambio\nSnack energético'),
+ 'activo', '2026-09-10T09:05:00-06:00'),
+
 (1, 'Volcán Cosigüina',
- 'Senderismo por el volcán más occidental, laguna en su cráter y vista al golfo de Fonseca.',
- E'Salida temprano hacia Chinandega\nInicio del ascenso\nDescanso en el mirador\nLlegada al cráter y laguna\nDescenso y retorno',
+ 'Senderismo por el volcán más occidental, laguna en su cráter y vista al golfo de Fonseca.
+
+## Itinerario
+1. Salida temprano hacia Chinandega
+2. Inicio del ascenso
+3. Descanso en el mirador
+4. Llegada al cráter y laguna
+5. Descenso y retorno
+
+## Qué incluye
+- Entrada al área protegida
+- Botiquín y radios del club
+
+## Equipo recomendado
+- Botas de montaña
+- 3L de agua
+- Linterna frontal
+- Capa de lluvia',
  'Alta', '2026-11-05T04:00:00-06:00', '2026-11-05T18:00:00-06:00',
  'Gasolinera Uno Rubenia - 4:00 AM',
- E'Entrada al área protegida\nBotiquín y radios del club',
- 1500.00, 650.00, 12, 11, NULL, 'activo', '2026-09-12T10:00:00-06:00',
+ 1500.00, 650.00, 12, 11, NULL,
  '/Presentaciones/viajes/cosiguina/VolcanCosiguina.png',
- E'Botas de montaña\n3L de agua\nLinterna frontal\nCapa de lluvia'),
+ 'activo', '2026-09-12T10:00:00-06:00'),
+
 (1, 'Cerro Negro',
- 'Sandboarding nocturno en la arena volcánica del Cerro Negro, León.',
- E'Traslado a la base del volcán\nCharla de seguridad y equipo\nAscenso por la arena volcánica\nDescenso en tabla\nRegreso y merienda',
+ 'Sandboarding nocturno en la arena volcánica del Cerro Negro, León.
+
+## Itinerario
+1. Traslado a la base del volcán
+2. Charla de seguridad y equipo
+3. Ascenso por la arena volcánica
+4. Descenso en tabla
+5. Regreso y merienda
+
+## Qué incluye
+- Tablas de sandboarding incluidas
+- Merienda al regreso
+
+## Equipo recomendado
+- Ropa para lavar después
+- Pañuelo para cubrir nariz y boca
+- 2L de agua
+- Cambio de ropa',
  'Media', '2026-11-08T14:00:00-06:00', '2026-11-08T22:00:00-06:00',
  'Oficina CNM León - 2:00 PM',
- E'Tablas de sandboarding incluidas\nMerienda al regreso',
- 1400.00, 600.00, 15, 14, NULL, 'activo', '2026-09-12T10:05:00-06:00',
+ 1400.00, 600.00, 15, 14, NULL,
  '/Presentaciones/viajes/cerro-negro/CerroNegro.png',
- E'Ropa para lavar después\nPañuelo para cubrir nariz y boca\n2L de agua\nCambio de ropa'),
+ 'activo', '2026-09-12T10:05:00-06:00'),
+
 (1, 'Volcán Telica',
- 'Campamento y ascenso nocturno para ver la lava y el amanecer desde la cima.',
- E'Juntanza en la hostería\nAscenso al atardecer\nObservación del cráter en la noche\nDescanso en la cima\nDescenso al amanecer',
+ 'Campamento y ascenso nocturno para ver la lava y el amanecer desde la cima.
+
+## Itinerario
+1. Juntanza en la hostería
+2. Ascenso al atardecer
+3. Observación del cráter en la noche
+4. Descanso en la cima
+5. Descenso al amanecer
+
+## Qué incluye
+- Campamento y equipo de cocina
+- Cena y desayuno en la cima
+
+## Equipo recomendado
+- Botas de montaña
+- 3L de agua
+- Chaqueta térmica
+- Linterna frontal',
  'Media', '2026-11-12T16:00:00-06:00', '2026-11-13T09:00:00-06:00',
  'Hostería San Jacinto - 4:00 PM',
- E'Campamento y equipo de cocina\nCena y desayuno en la cima',
- 1350.00, 550.00, 14, 12, NULL, 'activo', '2026-09-15T11:00:00-06:00',
+ 1350.00, 550.00, 14, 12, NULL,
  '/Presentaciones/viajes/telica/Telica.png',
- E'Botas de montaña\n3L de agua\nChaqueta térmica\nLinterna frontal'),
+ 'activo', '2026-09-15T11:00:00-06:00'),
+
 (1, 'Volcán Concepción',
- 'La cumbre más alta y exigente de la isla de Ometepe, con vistas espectaculares.',
- E'Travesía en ferry a Moyogalpa\nInicio del ascenso en Altagracia\nParadas técnicas por nivel\nCumbre y descenso\nRegreso en ferry',
+ 'La cumbre más alta y exigente de la isla de Ometepe, con vistas espectaculares.
+
+## Itinerario
+1. Travesía en ferry a Moyogalpa
+2. Inicio del ascenso en Altagracia
+3. Paradas técnicas por nivel
+4. Cumbre y descenso
+5. Regreso en ferry
+
+## Qué incluye
+- Tiquetes de ferry
+- Guía local de la isla
+
+## Equipo recomendado
+- Botas de montaña
+- 3L de agua mínimo
+- Protector solar
+- Comida energética',
  'Alta', '2026-11-18T03:30:00-06:00', '2026-11-18T17:30:00-06:00',
  'Muelle San Jorge - 3:30 AM',
- E'Tiquetes de ferry\nGuía local de la isla',
- 1600.00, 700.00, 6, 2, NULL, 'activo', '2026-09-15T11:05:00-06:00',
+ 1600.00, 700.00, 6, 2, NULL,
  '/Presentaciones/viajes/concepcion/Concepción1.png',
- E'Botas de montaña\n3L de agua mínimo\nProtector solar\nComida energética'),
+ 'activo', '2026-09-15T11:05:00-06:00'),
+
 (1, 'Cerro Mogotón',
- 'Hasta el punto más alto del país (2,107 m) en la reserva de Dipilto, Nueva Segovia.',
- E'Traslado a Dipilto\nIngreso a la reserva\nAscenso por bosque nublado\nCumbre del Mogotón\nDescenso y retorno',
+ 'Hasta el punto más alto del país (2,107 m) en la reserva de Dipilto, Nueva Segovia.
+
+## Itinerario
+1. Traslado a Dipilto
+2. Ingreso a la reserva
+3. Ascenso por bosque nublado
+4. Cumbre del Mogotón
+5. Descenso y retorno
+
+## Qué incluye
+- Entrada a la reserva Dipilto
+- Almuerzo caliente en cumbre
+
+## Equipo recomendado
+- Botas de montaña
+- 3L de agua
+- Chaqueta térmica
+- Capa de lluvia',
  'Alta', '2026-11-25T04:00:00-06:00', '2026-11-25T18:00:00-06:00',
  'Parque Central de Ocotal - 4:00 AM',
- E'Entrada a la reserva Dipilto\nAlmuerzo caliente en cumbre',
- 1550.00, 650.00, 10, 9, NULL, 'activo', '2026-09-18T09:30:00-06:00',
+ 1550.00, 650.00, 10, 9, NULL,
  '/Presentaciones/viajes/mogoton/mogoton.png',
- E'Botas de montaña\n3L de agua\nChaqueta térmica\nCapa de lluvia'),
+ 'activo', '2026-09-18T09:30:00-06:00'),
+
 (1, 'Laguna de Apoyo',
- 'Caminata de cerros a la laguna de origen volcánico más profunda del país.',
- E'Traslado a Catarina\nMirador de la Laguna\nDescenso a la orilla\nTiempo libre, nadar y almuerzo\nRetorno a Masaya',
+ 'Caminata de cerros a la laguna de origen volcánico más profunda del país.
+
+## Itinerario
+1. Traslado a Catarina
+2. Mirador de la Laguna
+3. Descenso a la orilla
+4. Tiempo libre, nadar y almuerzo
+5. Retorno a Masaya
+
+## Qué incluye
+- Entrada a la laguna
+- Almuerzo frente al agua
+
+## Equipo recomendado
+- Zapatos para caminar
+- Traje de baño
+- Protector solar
+- 2L de agua',
  'Baja', '2026-12-02T07:00:00-06:00', '2026-12-02T16:00:00-06:00',
  'Mercado de Masaya - 7:00 AM',
- E'Entrada a la laguna\nAlmuerzo frente al agua',
- 950.00, 400.00, 20, 18, NULL, 'activo', '2026-09-18T09:35:00-06:00',
+ 950.00, 400.00, 20, 18, NULL,
  '/Presentaciones/viajes/laguna-apoyo/LagunaApoyo.jpg',
- E'Zapatos para caminar\nTraje de baño\nProtector solar\n2L de agua'),
+ 'activo', '2026-09-18T09:35:00-06:00'),
+
 (1, 'Volcán Acatenango',
- 'Ascenso nocturno y amanecer sobre uno de los volcanes más emblemáticos de Centroamérica, con el Fuego lanzando lava a lo lejos.',
- E'Juntanza y traslado en Antigua\nAscenso nocturno con linternas\nCampamento a mitad de ruta\nAmanecer desde la cumbre\nDescenso y regreso',
+ 'Ascenso nocturno y amanecer sobre uno de los volcanes más emblemáticos de Centroamérica, con el Fuego lanzando lava a lo lejos.
+
+## Itinerario
+1. Juntanza y traslado en Antigua
+2. Ascenso nocturno con linternas
+3. Campamento a mitad de ruta
+4. Amanecer desde la cumbre
+5. Descenso y regreso
+
+## Qué incluye
+- Transporte terrestre en Guatemala
+- Equipo de campamento compartido
+- Dos comidas calientes
+
+## Equipo recomendado
+- Botas de montaña
+- 3L de agua
+- Chaqueta térmica
+- Linterna frontal
+- Saco de dormir',
  'Alta', '2027-01-15T04:00:00-06:00', '2027-01-16T13:00:00-06:00',
  'Antigua, Guatemala - por confirmar',
- E'Transporte terrestre en Guatemala\nEquipo de campamento compartido\nDos comidas calientes',
- 8500.00, 3000.00, 10, 10, NULL, 'activo', '2026-09-20T15:00:00-06:00',
+ 8500.00, 3000.00, 10, 10, NULL,
  '/Presentaciones/viajes/acatenango/exterior.jpg',
- E'Botas de montaña\n3L de agua\nChaqueta térmica\nLinterna frontal\nSaco de dormir'),
+ 'activo', '2026-09-20T15:00:00-06:00'),
+
 (1, 'Volcán Asososca',
- 'Ascenso al Volcán Asososca (El Hoyo), en la cordillera de los Maribios, con su laguna interior y vistas a León.',
- E'Juntanza en León\nRuta por la cordillera de los Maribios\nAscenso al sendero del cráter\nDescanso en la laguna interior\nDescenso y regreso',
+ 'Ascenso al Volcán Asososca (El Hoyo), en la cordillera de los Maribios, con su laguna interior y vistas a León.
+
+## Itinerario
+1. Juntanza en León
+2. Ruta por la cordillera de los Maribios
+3. Ascenso al sendero del cráter
+4. Descanso en la laguna interior
+5. Descenso y regreso
+
+## Qué incluye
+- Guías locales de los Maribios
+- Fruta al regreso
+
+## Equipo recomendado
+- Botas de montaña
+- 2L de agua
+- Chaqueta cortaviento
+- Protector solar',
  'Media', '2027-02-06T07:00:00-06:00', '2027-02-06T17:00:00-06:00',
  'Parque San Juan de Dios, León - por confirmar',
- E'Guías locales de los Maribios\nFruta al regreso',
- 9500.00, 3500.00, 12, 12, NULL, 'activo', '2026-09-25T16:00:00-06:00',
+ 9500.00, 3500.00, 12, 12, NULL,
  NULL,
- E'Botas de montaña\n2L de agua\nChaqueta cortaviento\nProtector solar');
+ 'activo', '2026-09-25T16:00:00-06:00');
 
 -- ---------- campos de formulario (viajes 1 Mombacho, 5 Telica, 7 Mogotón) ----------
 INSERT INTO campo_formulario (id_viaje, tipo_campo, etiqueta_pregunta, opciones_respuesta, orden, obligatorio) VALUES

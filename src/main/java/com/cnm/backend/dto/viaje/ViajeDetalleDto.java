@@ -12,12 +12,10 @@ public record ViajeDetalleDto(
     Long idAdministradorCreador,
     String titulo,
     String descripcion,
-    String itinerario,
     String dificultad,
     ZonedDateTime fechaHoraIda,
     ZonedDateTime fechaHoraVuelta,
     String puntoEncuentro,
-    String inclusionesAdicionales,
     BigDecimal montoTotal,
     BigDecimal montoReserva,
     Integer cuposMaximos,
@@ -26,6 +24,5 @@ public record ViajeDetalleDto(
     String estado,
     ZonedDateTime fechaCreacion,
     String imagenUrl,
-    String equipo,
     Boolean archivado
 ) {}
