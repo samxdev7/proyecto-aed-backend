@@ -31,18 +31,25 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final String remitente;
+    private final String mailHost;
+    private final String mailUsername;
 
     public EmailService(
             @Autowired(required = false) JavaMailSender mailSender,
-            @Value("${app.mail.from:cnmontanismo@gmail.com}") String remitente
+            @Value("${app.mail.from:cnmontanismo@gmail.com}") String remitente,
+            @Value("${spring.mail.host:localhost}") String mailHost,
+            @Value("${spring.mail.username:}") String mailUsername
     ) {
         this.mailSender = mailSender;
         this.remitente = remitente;
+        this.mailHost = mailHost;
+        this.mailUsername = mailUsername;
     }
 
     /**
      * Envía correo de felicitación y aceptación de cupo con el enlace al grupo de WhatsApp.
      */
+    @Async
     public void enviarCorreoAprobacion(
             String destinatario,
             String nombreUsuario,
@@ -61,6 +68,7 @@ public class EmailService {
     /**
      * Envía correo informando el rechazo de la solicitud junto con la justificación del administrador.
      */
+    @Async
     public void enviarCorreoRechazo(
             String destinatario,
             String nombreUsuario,
@@ -85,6 +93,9 @@ public class EmailService {
             log.warn("Servicio de correo: Destinatario nulo o vacío. No se enviará correo.");
             return false;
         }
+        if ("localhost".equalsIgnoreCase(mailHost) || mailUsername == null || mailUsername.isBlank()) {
+            log.warn("Servicio de correo: Advertencia - Se detectó host '{}' o usuario SMTP no configurado. Asegúrese de definir MAIL_HOST, MAIL_USERNAME y MAIL_PASSWORD en el entorno para permitir la entrega efectiva a {}.", mailHost, destinatario);
+        }
         return true;
     }
 
@@ -101,7 +112,7 @@ public class EmailService {
             mailSender.send(mensaje);
             log.info("Correo enviado exitosamente a {} con asunto '{}'", destinatario, asunto);
         } catch (Exception e) {
-            log.error("Error al enviar correo a {} con asunto '{}': {}", destinatario, asunto, e.getMessage());
+            log.error("Error al enviar correo a {} con asunto '{}': {}. Verifique la configuración SMTP en el servidor.", destinatario, asunto, e.getMessage(), e);
         }
     }
 

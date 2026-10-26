@@ -28,9 +28,13 @@ spring:
     properties:
       mail:
         smtp:
-          auth: ${MAIL_SMTP_AUTH:false}
+          auth: ${MAIL_SMTP_AUTH:true}
           starttls:
             enable: ${MAIL_SMTP_STARTTLS:true}
+            required: ${MAIL_SMTP_STARTTLS_REQUIRED:true}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 logging:
   level:
     com.cnm.backend: INFO

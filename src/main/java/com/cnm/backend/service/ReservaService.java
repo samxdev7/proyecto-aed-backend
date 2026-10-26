@@ -20,6 +20,8 @@ import com.cnm.backend.repository.ReservaRepository;
 import com.cnm.backend.repository.RespuestaFormularioRepository;
 import com.cnm.backend.repository.UsuarioRepository;
 import com.cnm.backend.repository.ViajeRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,8 @@ import java.util.List;
  */
 @Service
 public class ReservaService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReservaService.class);
 
     private final ReservaRepository reservaRepository;
     private final ViajeRepository viajeRepository;
@@ -336,8 +340,9 @@ public class ReservaService {
 
         // Envío de correo de felicitación con el enlace al grupo de WhatsApp
         Usuario usuario = usuarioRepository.findById(reserva.getIdUsuario()).orElse(null);
-        if (usuario != null && usuario.getCorreo() != null) {
+        if (usuario != null && usuario.getCorreo() != null && !usuario.getCorreo().isBlank()) {
             String enlaceWa = (viaje != null) ? viaje.getEnlaceWhatsApp() : null;
+            log.info("Disparando envío de correo de aprobación para reserva #{} hacia {}", idReserva, usuario.getCorreo());
             emailService.enviarCorreoAprobacion(
                     usuario.getCorreo(),
                     usuario.getNombreCompleto(),
@@ -345,6 +350,9 @@ public class ReservaService {
                     idReserva,
                     enlaceWa
             );
+        } else {
+            log.warn("No se pudo enviar correo de aprobación para la reserva #{}: usuario no encontrado o correo vacío (idUsuario={})",
+                    idReserva, reserva.getIdUsuario());
         }
 
         return obtenerReservaPorId(idReserva, idAdmin, true);
@@ -391,7 +399,8 @@ public class ReservaService {
 
         // Envío de correo con justificación del rechazo
         Usuario usuarioRechazo = usuarioRepository.findById(reserva.getIdUsuario()).orElse(null);
-        if (usuarioRechazo != null && usuarioRechazo.getCorreo() != null) {
+        if (usuarioRechazo != null && usuarioRechazo.getCorreo() != null && !usuarioRechazo.getCorreo().isBlank()) {
+            log.info("Disparando envío de correo de rechazo para reserva #{} hacia {}", idReserva, usuarioRechazo.getCorreo());
             emailService.enviarCorreoRechazo(
                     usuarioRechazo.getCorreo(),
                     usuarioRechazo.getNombreCompleto(),
@@ -399,6 +408,9 @@ public class ReservaService {
                     idReserva,
                     request.motivoRechazo()
             );
+        } else {
+            log.warn("No se pudo enviar correo de rechazo para la reserva #{}: usuario no encontrado o correo vacío (idUsuario={})",
+                    idReserva, reserva.getIdUsuario());
         }
 
         return obtenerReservaPorId(idReserva, idAdmin, true);
