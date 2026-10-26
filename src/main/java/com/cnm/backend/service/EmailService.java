@@ -27,22 +27,28 @@ public class EmailService {
     private static final String WHATSAPP_LINK = "https://wa.me/50557164892";
     private static final String INSTAGRAM_LINK = "https://www.instagram.com/clubnicaraguensemontanismo/";
     private static final String FACEBOOK_LINK = "https://www.facebook.com/p/Club-Nicarag%C3%BCense-de-Monta%C3%B1ismo-61560332057105/";
-    private static final String EMAIL_OFICIAL = "cnmontanismo@gmail.com";
 
     private final JavaMailSender mailSender;
     private final String remitente;
+    private final String mailHost;
+    private final String mailUsername;
 
     public EmailService(
             @Autowired(required = false) JavaMailSender mailSender,
-            @Value("${app.mail.from:cnmontanismo@gmail.com}") String remitente
+            @Value("${app.mail.from:}") String remitente,
+            @Value("${spring.mail.host:}") String mailHost,
+            @Value("${spring.mail.username:}") String mailUsername
     ) {
         this.mailSender = mailSender;
         this.remitente = remitente;
+        this.mailHost = mailHost;
+        this.mailUsername = mailUsername;
     }
 
     /**
      * Envía correo de felicitación y aceptación de cupo con el enlace al grupo de WhatsApp.
      */
+    @Async
     public void enviarCorreoAprobacion(
             String destinatario,
             String nombreUsuario,
@@ -61,6 +67,7 @@ public class EmailService {
     /**
      * Envía correo informando el rechazo de la solicitud junto con la justificación del administrador.
      */
+    @Async
     public void enviarCorreoRechazo(
             String destinatario,
             String nombreUsuario,
@@ -85,6 +92,10 @@ public class EmailService {
             log.warn("Servicio de correo: Destinatario nulo o vacío. No se enviará correo.");
             return false;
         }
+        if (mailHost == null || mailHost.isBlank() || mailUsername == null || mailUsername.isBlank()) {
+            log.warn("Servicio de correo: Variables SMTP no configuradas en el entorno (MAIL_HOST o MAIL_USERNAME vacíos). Configure las variables de correo para enviar correos a {}.", destinatario);
+            return false;
+        }
         return true;
     }
 
@@ -93,7 +104,8 @@ public class EmailService {
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
 
-            helper.setFrom(remitente, "Club Nicaragüense de Montañismo");
+            String remitenteFinal = (remitente != null && !remitente.isBlank()) ? remitente : mailUsername;
+            helper.setFrom(remitenteFinal, "Club Nicaragüense de Montañismo");
             helper.setTo(destinatario);
             helper.setSubject(asunto);
             helper.setText(cuerpoHtml, true);
@@ -101,7 +113,7 @@ public class EmailService {
             mailSender.send(mensaje);
             log.info("Correo enviado exitosamente a {} con asunto '{}'", destinatario, asunto);
         } catch (Exception e) {
-            log.error("Error al enviar correo a {} con asunto '{}': {}", destinatario, asunto, e.getMessage());
+            log.error("Error al enviar correo a {} con asunto '{}': {}. Verifique la configuración SMTP en el servidor.", destinatario, asunto, e.getMessage(), e);
         }
     }
 
@@ -219,7 +231,7 @@ public class EmailService {
                 + "<p style=\"color: #E2E8F0; font-weight: bold; margin: 0 0 10px 0; font-size: 14px;\">Contactos Oficiales</p>"
                 + "<p style=\"margin: 0 0 15px 0; line-height: 1.8;\">"
                 + "📱 WhatsApp: <a href=\"" + WHATSAPP_LINK + "\" style=\"color: #38BDF8; text-decoration: none;\">" + WHATSAPP_OFICIAL + "</a><br/>"
-                + "✉️ Correo: <a href=\"mailto:" + EMAIL_OFICIAL + "\" style=\"color: #38BDF8; text-decoration: none;\">" + EMAIL_OFICIAL + "</a><br/>"
+                + "✉️ Correo: <a href=\"mailto:" + ((remitente != null && !remitente.isBlank()) ? remitente : ((mailUsername != null && !mailUsername.isBlank()) ? mailUsername : "contacto@clubnicaraguensemontanismo.org")) + "\" style=\"color: #38BDF8; text-decoration: none;\">" + ((remitente != null && !remitente.isBlank()) ? remitente : ((mailUsername != null && !mailUsername.isBlank()) ? mailUsername : "contacto@clubnicaraguensemontanismo.org")) + "</a><br/>"
                 + "📍 Managua, Nicaragua"
                 + "</p>"
                 + "<div style=\"margin: 15px 0;\">"

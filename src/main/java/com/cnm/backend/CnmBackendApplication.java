@@ -2,11 +2,13 @@ package com.cnm.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 // Import para auto importacion del env file en el root del proyecto
 import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication
+@EnableAsync
 public class CnmBackendApplication {
 
     static {
