@@ -20,7 +20,7 @@ INSERT INTO usuario (primer_nombre, segundo_nombre, primer_apellido, segundo_ape
 ('María',  'Fernanda','Torres','Chávez','maria.torres@example.com', '$2a$10$TqSwvkVFPqGVLrhDi/rn6uDNpzy6iWOhKk3p1S2QMblxeu8Xz6k5G', 'cliente',       '+505 8555-4433', 'F', 'Nicaragüense', 'cedula', '001-050797-0004D', true,  '2026-05-18T14:20:00-06:00');
 
 -- ---------- viajes (creados por el admin, id_usuario 1) ----------
-INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fecha_hora_ida, fecha_hora_vuelta, punto_encuentro, monto_total, monto_reserva, cupos_maximos, cupos_disponibles, enlace_whatsapp, imagen_url, estado, fecha_creacion) VALUES
+INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fecha_hora_ida, fecha_hora_vuelta, punto_encuentro, monto_total, monto_reserva, cupos_maximos, cupos_disponibles, enlace_whatsapp, imagen_url, estado, archivado, fecha_creacion) VALUES
 (1, 'Volcán Mombacho',
  'Ascenso por la reserva natural del Volcán Mombacho con vistas panorámicas al lago.
 
@@ -44,7 +44,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Gasolinera UNO Metrocentro - 5:00 AM',
  1285.00, 550.00, 15, 14, NULL,
  '/Presentaciones/viajes/mombacho/VolcanMombacho.jpg',
- 'activo', '2026-09-10T09:00:00-06:00'),
+ 'activo', false, '2026-09-10T09:00:00-06:00'),
 
 (1, 'Cañón de Somoto',
  'Recorrido por las paredes y piscinas naturales del Cañón de Somoto.
@@ -69,7 +69,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Plaza El Sol, Somoto - 5:30 AM',
  1100.00, 450.00, 20, 17, NULL,
  '/Presentaciones/viajes/somoto/canonsomoto.jpg',
- 'activo', '2026-09-10T09:05:00-06:00'),
+ 'activo', false, '2026-09-10T09:05:00-06:00'),
 
 (1, 'Volcán Cosigüina',
  'Senderismo por el volcán más occidental, laguna en su cráter y vista al golfo de Fonseca.
@@ -94,7 +94,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Gasolinera Uno Rubenia - 4:00 AM',
  1500.00, 650.00, 12, 11, NULL,
  '/Presentaciones/viajes/cosiguina/VolcanCosiguina.png',
- 'activo', '2026-09-12T10:00:00-06:00'),
+ 'activo', false, '2026-09-12T10:00:00-06:00'),
 
 (1, 'Cerro Negro',
  'Sandboarding nocturno en la arena volcánica del Cerro Negro, León.
@@ -119,7 +119,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Oficina CNM León - 2:00 PM',
  1400.00, 600.00, 15, 14, NULL,
  '/Presentaciones/viajes/cerro-negro/CerroNegro.png',
- 'activo', '2026-09-12T10:05:00-06:00'),
+ 'activo', false, '2026-09-12T10:05:00-06:00'),
 
 (1, 'Volcán Telica',
  'Campamento y ascenso nocturno para ver la lava y el amanecer desde la cima.
@@ -144,7 +144,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Hostería San Jacinto - 4:00 PM',
  1350.00, 550.00, 14, 12, NULL,
  '/Presentaciones/viajes/telica/Telica.png',
- 'activo', '2026-09-15T11:00:00-06:00'),
+ 'activo', false, '2026-09-15T11:00:00-06:00'),
 
 (1, 'Volcán Concepción',
  'La cumbre más alta y exigente de la isla de Ometepe, con vistas espectaculares.
@@ -169,7 +169,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Muelle San Jorge - 3:30 AM',
  1600.00, 700.00, 6, 2, NULL,
  '/Presentaciones/viajes/concepcion/Concepción1.png',
- 'activo', '2026-09-15T11:05:00-06:00'),
+ 'activo', false, '2026-09-15T11:05:00-06:00'),
 
 (1, 'Cerro Mogotón',
  'Hasta el punto más alto del país (2,107 m) en la reserva de Dipilto, Nueva Segovia.
@@ -194,7 +194,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Parque Central de Ocotal - 4:00 AM',
  1550.00, 650.00, 10, 9, NULL,
  '/Presentaciones/viajes/mogoton/mogoton.png',
- 'activo', '2026-09-18T09:30:00-06:00'),
+ 'activo', false, '2026-09-18T09:30:00-06:00'),
 
 (1, 'Laguna de Apoyo',
  'Caminata de cerros a la laguna de origen volcánico más profunda del país.
@@ -219,7 +219,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Mercado de Masaya - 7:00 AM',
  950.00, 400.00, 20, 18, NULL,
  '/Presentaciones/viajes/laguna-apoyo/LagunaApoyo.jpg',
- 'activo', '2026-09-18T09:35:00-06:00'),
+ 'activo', false, '2026-09-18T09:35:00-06:00'),
 
 (1, 'Volcán Acatenango',
  'Ascenso nocturno y amanecer sobre uno de los volcanes más emblemáticos de Centroamérica, con el Fuego lanzando lava a lo lejos.
@@ -246,7 +246,7 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Antigua, Guatemala - por confirmar',
  8500.00, 3000.00, 10, 10, NULL,
  '/Presentaciones/viajes/acatenango/exterior.jpg',
- 'activo', '2026-09-20T15:00:00-06:00'),
+ 'activo', false, '2026-09-20T15:00:00-06:00'),
 
 (1, 'Volcán Asososca',
  'Ascenso al Volcán Asososca (El Hoyo), en la cordillera de los Maribios, con su laguna interior y vistas a León.
@@ -271,15 +271,40 @@ INSERT INTO viaje (id_administrador_creador, titulo, descripcion, dificultad, fe
  'Parque San Juan de Dios, León - por confirmar',
  9500.00, 3500.00, 12, 12, NULL,
  NULL,
- 'activo', '2026-09-25T16:00:00-06:00');
+ 'activo', false, '2026-09-25T16:00:00-06:00'),
+
+(1, 'Volcán Masaya (Histórico)',
+ 'Recorrido histórico y observación de cráteres en el Parque Nacional Volcán Masaya.
+
+## Itinerario
+1. Salida de Managua
+2. Ingreso al parque
+3. Mirador del cráter Santiago
+4. Caminata por senderos de lava
+5. Retorno a Managua
+
+## Qué incluye
+- Entrada al parque nacional
+- Transporte privado
+
+## Equipo recomendado
+- Ropa fresca y calzado cómodo
+- Gorra y bloqueador solar',
+ 'Baja', '2026-08-10T08:00:00-06:00', '2026-08-10T14:00:00-06:00',
+ 'Parque Central de Managua - 8:00 AM',
+ 750.00, 300.00, 20, 20, NULL,
+ '/Presentaciones/viajes/masaya/VolcanMasaya.jpg',
+ 'activo', true, '2026-08-01T10:00:00-06:00');
 
 -- ---------- campos de formulario (viajes 1 Mombacho, 5 Telica, 7 Mogotón) ----------
 INSERT INTO campo_formulario (id_viaje, tipo_campo, etiqueta_pregunta, opciones_respuesta, orden, obligatorio) VALUES
 (1, 'seleccion_unica', '¿Tienes experiencia en montañismo?', '["Sí","No"]'::json, 1, true),
 (1, 'texto',           'Alergias o condiciones médicas',     NULL,            2, false),
+(1, 'archivo',         'Certificado médico o constancia de salud', NULL,       3, false),
 (5, 'seleccion_unica', '¿Has acampado en altura antes?',     '["Sí","No","No, es mi primera vez"]'::json, 1, true),
 (5, 'texto',           'Contacto de emergencia (nombre y teléfono)', NULL, 2, true),
 (5, 'texto',           'Alergias o condiciones médicas',     NULL,            3, false),
+(5, 'archivo',         'Copia de seguro médico o auxilio',   NULL,            4, false),
 (7, 'seleccion_unica', '¿Cómo evalúas tu condición física actual?', '["Buena","Regular","Necesito mejorar"]'::json, 1, true),
 (7, 'texto',           'Medicamentos que tomarás durante la ruta', NULL, 2, false);
 
@@ -290,53 +315,53 @@ INSERT INTO campo_formulario (id_viaje, tipo_campo, etiqueta_pregunta, opciones_
 INSERT INTO reserva (id_reserva, id_usuario, id_viaje, id_administrador_revisor, estado, fecha_reserva, fecha_limite_pago, fecha_pago, numero_referencia_pago, captura_comprobante_url, motivo_rechazo, fecha_revision, editable) VALUES
 -- 1: Carlos, Mogotón (v7), aprobada
 (1, 2, 7, 1, 'aprobada', '2026-09-20T08:05:00-06:00', '2026-09-20T08:35:00-06:00', '2026-09-20T08:05:00-06:00', 'TRF-20260920-118',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BAC%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260920-118%20%C2%B7%20C%24%20650.00%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22172%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748b%22%3EA%20nombre%20de%3A%20Club%20Nicarag%C3%BCense%20de%20Monta%C3%B1ismo%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890001-bac118.jpg',
  NULL, '2026-09-21T10:12:00-06:00', false),
 -- 2: Carlos, Mombacho (v1), pendiente
 (2, 2, 1, NULL, 'pendiente', '2026-09-28T17:40:00-06:00', '2026-09-28T18:10:00-06:00', '2026-09-28T17:40:00-06:00', 'TRF-20260928-884',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BanPro%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260928-884%20%C2%B7%20C%24%20550.00%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22172%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748b%22%3ECuenta%20100-022-000123-4%20%C2%B7%20C%C3%B3rdobas%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890002-banpro884.jpg',
  NULL, NULL, false),
 -- 3: Ana, Somoto (v2) con 2 acompañantes, aprobada
 (3, 3, 2, 1, 'aprobada', '2026-09-18T11:00:00-06:00', '2026-09-18T11:30:00-06:00', '2026-09-18T11:00:00-06:00', 'TRF-20260918-332',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BDF%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260918-332%20%C2%B7%20C%24%201350.00%20(3%20personas)%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890003-bdf332.jpg',
  NULL, '2026-09-18T15:45:00-06:00', false),
 -- 4: Luis, Mombacho (v1), rechazada (cupos reintegrados)
 (4, 4, 1, 1, 'rechazada', '2026-09-22T14:10:00-06:00', '2026-09-22T14:40:00-06:00', '2026-09-22T14:10:00-06:00', 'TRF-20260922-501',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BanPro%20(ilegible)%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260922-501%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890004-banpro501.jpg',
  'Comprobante ilegible: no se distingue el número de referencia.', '2026-09-23T09:00:00-06:00', false),
 -- 5: María, Telica (v5) con 1 acompañante, pendiente
 (5, 5, 5, NULL, 'pendiente', '2026-09-29T19:22:00-06:00', '2026-09-29T19:52:00-06:00', '2026-09-29T19:22:00-06:00', 'TRF-20260929-776',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BAC%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260929-776%20%C2%B7%20C%24%201100.00%20(2%20personas)%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890005-bac776.jpg',
  NULL, NULL, false),
 -- 6: Ana, Laguna de Apoyo (v8), aprobada
 (6, 3, 8, 1, 'aprobada', '2026-09-25T10:00:00-06:00', '2026-09-25T10:30:00-06:00', '2026-09-25T10:00:00-06:00', 'TRF-20260925-210',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BanPro%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260925-210%20%C2%B7%20C%24%20400.00%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890006-banpro210.jpg',
  NULL, '2026-09-25T13:30:00-06:00', false),
 -- 7: Luis, Cerro Negro (v4), pendiente
 (7, 4, 4, NULL, 'pendiente', '2026-09-29T21:05:00-06:00', '2026-09-29T21:35:00-06:00', '2026-09-29T21:05:00-06:00', 'TRF-20260929-909',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BAC%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260929-909%20%C2%B7%20C%24%20600.00%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890007-bac909.jpg',
  NULL, NULL, false),
 -- 8: María, Cosigüina (v3), rechazada (cupos reintegrados)
 (8, 5, 3, 1, 'rechazada', '2026-09-24T12:00:00-06:00', '2026-09-24T12:30:00-06:00', '2026-09-24T12:00:00-06:00', 'TRF-20260924-645',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BDF%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260924-645%20%C2%B7%20monto%20no%20coincide%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890008-bdf645.jpg',
  'El monto del comprobante no corresponde al abono del viaje (C$ 650.00).', '2026-09-24T16:20:00-06:00', false),
 -- 9: Carlos, Laguna de Apoyo (v8), aprobada
 (9, 2, 8, 1, 'aprobada', '2026-09-26T09:30:00-06:00', '2026-09-26T10:00:00-06:00', '2026-09-26T09:30:00-06:00', 'TRF-20260926-428',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BanPro%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260926-428%20%C2%B7%20C%24%20400.00%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890009-banpro428.jpg',
  NULL, '2026-09-26T14:00:00-06:00', false),
 -- 10: Ana, Concepción (v6) con 1 acompañante, pendiente
 (10, 3, 6, NULL, 'pendiente', '2026-09-30T08:12:00-06:00', '2026-09-30T08:42:00-06:00', '2026-09-30T08:12:00-06:00', 'TRF-20260930-318',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BAC%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260930-318%20%C2%B7%20C%24%201400.00%20(2%20personas)%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890010-bac318.jpg',
  NULL, NULL, false),
 -- 11: Ana, Cosigüina (v3), expirada (cupo retenido, sin flujo de expiración aún)
 (11, 3, 3, NULL, 'expirada', '2026-09-15T18:30:00-06:00', '2026-09-15T19:00:00-06:00', '2026-09-15T18:30:00-06:00', NULL, NULL, NULL, NULL, false),
 -- 12: Luis, Concepción (v6), aprobada
 (12, 4, 6, 1, 'aprobada', '2026-09-27T11:20:00-06:00', '2026-09-27T11:50:00-06:00', '2026-09-27T11:20:00-06:00', 'TRF-20260927-542',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BDF%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260927-542%20%C2%B7%20C%24%20700.00%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890012-bdf542.jpg',
  NULL, '2026-09-27T17:05:00-06:00', false),
 -- 13: María, Concepción (v6), aprobada
 (13, 5, 6, 1, 'aprobada', '2026-09-28T16:44:00-06:00', '2026-09-28T17:14:00-06:00', '2026-09-28T16:44:00-06:00', 'TRF-20260928-660',
- 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22400%22%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%22560%22%20height%3D%22320%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23cbd5e1%22%2F%3E%3Ctext%20x%3D%2264%22%20y%3D%2296%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%230f172a%22%3EComprobante%20BanPro%3C%2Ftext%3E%3Ctext%20x%3D%2264%22%20y%3D%22140%22%20font-family%3D%22monospace%22%20font-size%3D%2216%22%20fill%3D%22%23334155%22%3EREF%3A%20TRF-20260928-660%20%C2%B7%20C%24%20700.00%3C%2Ftext%3E%3C%2Fsvg%3E',
+ 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/capturas-comprobantes/images/comprobante-1729890013-banpro660.jpg',
  NULL, '2026-09-29T08:30:00-06:00', false);
 
 SELECT setval('reserva_id_reserva_seq', 13);
@@ -351,22 +376,28 @@ INSERT INTO acompanante (id_reserva, primer_nombre, segundo_nombre, primer_apell
 -- ---------- respuestas de formulario ----------
 -- Campos: 1-2 → viaje 1 (Mombacho); 3-5 → viaje 5 (Telica); 6-7 → viaje 7 (Mogotón)
 INSERT INTO respuesta_formulario (id_reserva, id_campo, valor_respuesta) VALUES
-(2, 1, 'Sí'), (2, 2, 'Ninguna'),
-(5, 3, 'Sí, he acampado antes'), (5, 4, 'Ernesto Novoa - +505 8123-4567'), (5, 5, 'Alergia al polen'),
-(1, 6, 'Buena'), (1, 7, 'Ninguno');
+(2, 1, 'Sí'),
+(2, 2, 'Ninguna'),
+(2, 3, 'https://gnotslrwwptblfoofgsx.supabase.co/storage/v1/object/public/user-entries-files/files/entrada-1729890001-constancia-medica.pdf'),
+(5, 4, 'Sí, he acampado antes'),
+(5, 5, 'Ernesto Novoa - +505 8123-4567'),
+(5, 6, 'Alergia al polen'),
+(1, 8, 'Buena'),
+(1, 9, 'Ninguno');
 
 -- ---------- notificaciones (tipos: nuevo_viaje, pocos_cupos, reserva_aprobada, reserva_rechazada) ----------
-INSERT INTO notificacion (id_usuario, tipo, mensaje, fecha_envio, leida) VALUES
-(2, 'reserva_aprobada',  '¡Tu reserva #1 ha sido aprobada!', '2026-09-21T10:12:00-06:00', true),
-(2, 'reserva_aprobada',  '¡Tu reserva #9 ha sido aprobada!', '2026-09-26T14:00:00-06:00', false),
-(2, 'nuevo_viaje',       '¡Nuevo viaje publicado: Volcán Asososca! Revisa el catálogo.', '2026-09-25T16:00:00-06:00', true),
-(3, 'reserva_aprobada',  '¡Tu reserva #3 ha sido aprobada!', '2026-09-18T15:45:00-06:00', true),
-(3, 'reserva_aprobada',  '¡Tu reserva #6 ha sido aprobada!', '2026-09-25T13:30:00-06:00', false),
-(3, 'pocos_cupos',       '¡Últimos cupos! El Volcán Concepción tiene 2 cupos disponibles.', '2026-09-29T12:00:00-06:00', false),
-(3, 'nuevo_viaje',       '¡Nuevo viaje publicado: Volcán Acatenango! Febrero 2027, cupos limitados.', '2026-09-20T15:00:00-06:00', true),
-(4, 'reserva_rechazada', 'Tu reserva #4 ha sido rechazada. Motivo: Comprobante ilegible: no se distingue el número de referencia.', '2026-09-23T09:00:00-06:00', true),
-(5, 'reserva_rechazada', 'Tu reserva #8 ha sido rechazada. Motivo: El monto del comprobante no corresponde al abono del viaje (C$ 650.00).', '2026-09-24T16:20:00-06:00', false),
-(5, 'nuevo_viaje',       '¡Nuevo viaje publicado: Cañón de Somoto! Cupos abiertos.', '2026-09-10T09:05:00-06:00', true);
+INSERT INTO notificacion (id_usuario, id_viaje, tipo, mensaje, fecha_envio, leida) VALUES
+(2, 7,  'reserva_aprobada',    '¡Tu cupo ha sido aceptado! Revisa tu correo electrónico para unirte al grupo de WhatsApp.', '2026-09-21T10:12:00-06:00', true),
+(2, 8,  'reserva_aprobada',    '¡Tu cupo ha sido aceptado! Revisa tu correo electrónico para unirte al grupo de WhatsApp.', '2026-09-26T14:00:00-06:00', false),
+(2, 10, 'nuevo_viaje',         '¡Nuevo viaje publicado: Volcán Asososca! Revisa el catálogo.', '2026-09-25T16:00:00-06:00', true),
+(3, 2,  'reserva_aprobada',    '¡Tu cupo ha sido aceptado! Revisa tu correo electrónico para unirte al grupo de WhatsApp.', '2026-09-18T15:45:00-06:00', true),
+(3, 8,  'reserva_aprobada',    '¡Tu cupo ha sido aceptado! Revisa tu correo electrónico para unirte al grupo de WhatsApp.', '2026-09-25T13:30:00-06:00', false),
+(3, 6,  'pocos_cupos',         '¡Últimos cupos! El Volcán Concepción tiene 2 cupos disponibles.', '2026-09-29T12:00:00-06:00', false),
+(3, 9,  'nuevo_viaje',         '¡Nuevo viaje publicado: Volcán Acatenango! Febrero 2027, cupos limitados.', '2026-09-20T15:00:00-06:00', true),
+(4, 1,  'reserva_rechazada',   'Tu cupo ha sido rechazado. Revisa tu correo electrónico para conocer la justificación.', '2026-09-23T09:00:00-06:00', true),
+(5, 3,  'reserva_rechazada',   'Tu cupo ha sido rechazado. Revisa tu correo electrónico para conocer la justificación.', '2026-09-24T16:20:00-06:00', false),
+(5, 2,  'nuevo_viaje',         '¡Nuevo viaje publicado: Cañón de Somoto! Cupos abiertos.', '2026-09-10T09:05:00-06:00', true),
+(1, 1,  'nueva_reserva_admin', 'El viaje Volcán Mombacho cuenta con una nueva solicitud de reserva (#2).', '2026-09-28T17:40:00-06:00', false);
 
 -- ---------- verificación ----------
 SELECT 'usuarios' t, count(*) FROM usuario
