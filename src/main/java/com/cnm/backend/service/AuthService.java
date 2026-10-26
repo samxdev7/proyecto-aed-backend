@@ -3,15 +3,24 @@ package com.cnm.backend.service;
 import com.cnm.backend.dto.auth.GoogleAuthRequestDto;
 import com.cnm.backend.dto.auth.LoginRequestDto;
 import com.cnm.backend.dto.auth.LoginResponseDto;
+import com.cnm.backend.dto.auth.MensajeResponseDto;
+import com.cnm.backend.dto.auth.RecuperarContrasenaRequestDto;
 import com.cnm.backend.dto.auth.RegistroUsuarioRequestDto;
+import com.cnm.backend.dto.auth.RestablecerContrasenaRequestDto;
 import com.cnm.backend.dto.usuario.UsuarioPerfilResponseDto;
 import com.cnm.backend.entity.Rol;
+import com.cnm.backend.entity.TokenRecuperacion;
 import com.cnm.backend.entity.Usuario;
+import com.cnm.backend.repository.TokenRecuperacionRepository;
 import com.cnm.backend.repository.UsuarioRepository;
 import com.cnm.backend.security.GoogleTokenVerifierService;
 import com.cnm.backend.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -19,19 +28,30 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
     private final UsuarioRepository usuarioRepository;
+    private final TokenRecuperacionRepository tokenRecuperacionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final GoogleTokenVerifierService googleTokenVerifierService;
+    private final EmailService emailService;
+    private final String frontendUrl;
 
     public AuthService(UsuarioRepository usuarioRepository,
+                       TokenRecuperacionRepository tokenRecuperacionRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService,
-                       GoogleTokenVerifierService googleTokenVerifierService) {
+                       GoogleTokenVerifierService googleTokenVerifierService,
+                       EmailService emailService,
+                       @Value("${app.frontend.url:http://localhost:3000}") String frontendUrl) {
         this.usuarioRepository = usuarioRepository;
+        this.tokenRecuperacionRepository = tokenRecuperacionRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.googleTokenVerifierService = googleTokenVerifierService;
+        this.emailService = emailService;
+        this.frontendUrl = frontendUrl;
     }
 
     public LoginResponseDto login(LoginRequestDto request) {
@@ -131,5 +151,73 @@ public class AuthService {
                 usuario.getRol().name(),
                 usuario.isNotificacionesHabilitadas()
         );
+    }
+
+    @Transactional
+    public MensajeResponseDto solicitarRecuperacion(RecuperarContrasenaRequestDto request) {
+        String correoLimpio = request.correo().trim().toLowerCase();
+        var optUsuario = usuarioRepository.findByCorreo(correoLimpio);
+
+        // Seguridad / Anti-enumeración: si el usuario no existe, devolvemos el mismo mensaje de éxito
+        if (optUsuario.isEmpty()) {
+            log.info("Solicitud de recuperación para correo no registrado: {}", correoLimpio);
+            return new MensajeResponseDto(
+                    "Si el correo está registrado en nuestra plataforma, recibirás un enlace para restablecer tu contraseña."
+            );
+        }
+
+        Usuario usuario = optUsuario.get();
+
+        // Invalidar tokens previos no utilizados para este usuario
+        var tokensPrevios = tokenRecuperacionRepository.findByUsuarioAndUsadoFalse(usuario);
+        for (TokenRecuperacion tp : tokensPrevios) {
+            tp.setUsado(true);
+        }
+        tokenRecuperacionRepository.saveAll(tokensPrevios);
+
+        // Generar nuevo token criptográfico seguro
+        String tokenValor = UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString();
+        TokenRecuperacion nuevoToken = new TokenRecuperacion(
+                usuario,
+                tokenValor,
+                ZonedDateTime.now().plusHours(1)
+        );
+        tokenRecuperacionRepository.save(nuevoToken);
+
+        // Construir enlace de restablecimiento
+        String baseFrontend = (frontendUrl != null && !frontendUrl.isBlank())
+                ? frontendUrl.replaceAll("/+$", "")
+                : "http://localhost:3000";
+        String enlaceRestablecimiento = baseFrontend + "/restablecer-contrasena?token=" + tokenValor;
+
+        // Enviar correo electrónico institucional
+        emailService.enviarCorreoRecuperacionContrasena(
+                usuario.getCorreo(),
+                usuario.getPrimerNombre(),
+                enlaceRestablecimiento
+        );
+
+        return new MensajeResponseDto(
+                "Si el correo está registrado en nuestra plataforma, recibirás un enlace para restablecer tu contraseña."
+        );
+    }
+
+    @Transactional
+    public MensajeResponseDto restablecerContrasena(RestablecerContrasenaRequestDto request) {
+        TokenRecuperacion tokenRecuperacion = tokenRecuperacionRepository.findByToken(request.token())
+                .orElseThrow(() -> new RuntimeException("El enlace de recuperación es inválido o no existe."));
+
+        if (!tokenRecuperacion.esValido()) {
+            throw new RuntimeException("El enlace de recuperación ha expirado o ya fue utilizado. Por favor solicita uno nuevo.");
+        }
+
+        Usuario usuario = tokenRecuperacion.getUsuario();
+        usuario.setContrasenaHash(passwordEncoder.encode(request.nuevaContrasena()));
+        usuarioRepository.save(usuario);
+
+        tokenRecuperacion.setUsado(true);
+        tokenRecuperacionRepository.save(tokenRecuperacion);
+
+        return new MensajeResponseDto("Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña.");
     }
 }

@@ -73,7 +73,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 
                 // Públicos
-                .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login", "/auth/google").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login", "/auth/google", "/auth/recuperar-contrasena", "/auth/restablecer-contrasena").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes", "/viajes/*/campos-formulario").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes/archivados").permitAll()
 
