@@ -23,9 +23,19 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByCorreo(String correo);
 
     /**
+     * Busca un usuario por correo electrónico ignorando mayúsculas y minúsculas.
+     */
+    Optional<Usuario> findByCorreoIgnoreCase(String correo);
+
+    /**
      * Comprueba si un correo ya se encuentra registrado (útil para validación en registro - RF5).
      */
     boolean existsByCorreo(String correo);
+
+    /**
+     * Comprueba si un correo ya se encuentra registrado ignorando mayúsculas y minúsculas.
+     */
+    boolean existsByCorreoIgnoreCase(String correo);
 
     /**
      * Comprueba si un número de identificación (cédula/pasaporte) ya está en uso.

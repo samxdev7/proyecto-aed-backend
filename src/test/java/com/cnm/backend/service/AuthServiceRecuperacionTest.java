@@ -77,7 +77,7 @@ class AuthServiceRecuperacionTest {
 
     @Test
     void solicitarRecuperacion_usuarioExistente_invalidaPreviosGeneraTokenYEnviaCorreo() {
-        when(usuarioRepository.findByCorreo("montanista@ejemplo.com")).thenReturn(Optional.of(usuarioPrueba));
+        when(usuarioRepository.findByCorreoIgnoreCase("montanista@ejemplo.com")).thenReturn(Optional.of(usuarioPrueba));
         
         TokenRecuperacion tokenPrevio = new TokenRecuperacion(usuarioPrueba, "token-previo", ZonedDateTime.now().plusHours(1));
         when(tokenRecuperacionRepository.findByUsuarioAndUsadoFalse(usuarioPrueba))
@@ -87,7 +87,7 @@ class AuthServiceRecuperacionTest {
         MensajeResponseDto response = authService.solicitarRecuperacion(request);
 
         assertNotNull(response);
-        assertTrue(response.mensaje().contains("recibirás un enlace"));
+        assertTrue(response.mensaje().contains("enviado un enlace"));
 
         // Se invalidó el token previo
         assertTrue(tokenPrevio.getUsado());
@@ -110,15 +110,14 @@ class AuthServiceRecuperacionTest {
     }
 
     @Test
-    void solicitarRecuperacion_usuarioNoExiste_retornaMensajeSinEnviarCorreo() {
-        when(usuarioRepository.findByCorreo("desconocido@ejemplo.com")).thenReturn(Optional.empty());
+    void solicitarRecuperacion_usuarioNoExiste_lanzaExcepcion() {
+        when(usuarioRepository.findByCorreoIgnoreCase("desconocido@ejemplo.com")).thenReturn(Optional.empty());
 
         RecuperarContrasenaRequestDto request = new RecuperarContrasenaRequestDto("desconocido@ejemplo.com");
-        MensajeResponseDto response = authService.solicitarRecuperacion(request);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> authService.solicitarRecuperacion(request));
 
-        assertNotNull(response);
-        assertTrue(response.mensaje().contains("recibirás un enlace"));
-
+        assertTrue(ex.getMessage().contains("no se encuentra registrado"));
         verify(tokenRecuperacionRepository, never()).save(any());
         verify(emailService, never()).enviarCorreoRecuperacionContrasena(any(), any(), any());
     }

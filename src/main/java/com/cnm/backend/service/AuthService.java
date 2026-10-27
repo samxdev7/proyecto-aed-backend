@@ -155,18 +155,9 @@ public class AuthService {
 
     @Transactional
     public MensajeResponseDto solicitarRecuperacion(RecuperarContrasenaRequestDto request) {
-        String correoLimpio = request.correo().trim().toLowerCase();
-        var optUsuario = usuarioRepository.findByCorreo(correoLimpio);
-
-        // Seguridad / Anti-enumeración: si el usuario no existe, devolvemos el mismo mensaje de éxito
-        if (optUsuario.isEmpty()) {
-            log.info("Solicitud de recuperación para correo no registrado: {}", correoLimpio);
-            return new MensajeResponseDto(
-                    "Si el correo está registrado en nuestra plataforma, recibirás un enlace para restablecer tu contraseña."
-            );
-        }
-
-        Usuario usuario = optUsuario.get();
+        String correoLimpio = request.correo().trim();
+        Usuario usuario = usuarioRepository.findByCorreoIgnoreCase(correoLimpio)
+                .orElseThrow(() -> new IllegalArgumentException("El correo electrónico no se encuentra registrado en el sistema"));
 
         // Invalidar tokens previos no utilizados para este usuario
         var tokensPrevios = tokenRecuperacionRepository.findByUsuarioAndUsadoFalse(usuario);
@@ -198,7 +189,7 @@ public class AuthService {
         );
 
         return new MensajeResponseDto(
-                "Si el correo está registrado en nuestra plataforma, recibirás un enlace para restablecer tu contraseña."
+                "Te hemos enviado un enlace a tu correo electrónico para restablecer tu contraseña."
         );
     }
 

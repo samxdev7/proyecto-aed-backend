@@ -42,7 +42,7 @@ El ecosistema opera bajo un modelo desacoplado **Cliente-Servidor (SPA / SSR Hí
 |  - Repositorios Spring Data JPA      |
 |  - Filtro JWT + Bcrypt Passwords     |
 |  - Jakarta Mail (SMTP Gmail TLS 587) |
-|  - Flyway Migrations (V1 -> V8)      |
+|  - Flyway Migrations (V1 -> V9)      |
 +--------------------------+-----------+
                            |
             Conexión JDBC  | PostgreSQL 15+
@@ -50,7 +50,8 @@ El ecosistema opera bajo un modelo desacoplado **Cliente-Servidor (SPA / SSR Hí
 +-----------------------------------------------------------------------------------+
 |                             BASE DE DATOS RELACIONAL                              |
 |  PostgreSQL / Supabase (Tablas: usuario, viaje, reserva, acompanante,             |
-|                         campo_formulario, respuesta_formulario, notificacion)     |
+|                         campo_formulario, respuesta_formulario, notificacion,     |
+|                         token_recuperacion)                                       |
 +-----------------------------------------------------------------------------------+
 ```
 
@@ -64,6 +65,9 @@ El ecosistema opera bajo un modelo desacoplado **Cliente-Servidor (SPA / SSR Hí
 3. **Consumo de la API**:
    - Cada petición protegida del frontend viaja a través del cliente tipado `ApiClient` inyectando el header `Authorization: Bearer <token>`.
    - El backend valida el token mediante `JwtAuthenticationFilter`, mapeando el contexto de seguridad en `SecurityContextHolder`.
+4. **Recuperación y Restablecimiento de Contraseñas (Password Reset)**:
+   - **Solicitud (`POST /auth/recuperar-contrasena`)**: Valida de forma estricta que el correo electrónico ingresado exista en el sistema (`findByCorreoIgnoreCase`). Si no existe, rechaza la solicitud con HTTP 400 (`"El correo electrónico no se encuentra registrado en el sistema"`). Si existe, invalida cualquier token previo no utilizado, genera un token criptográfico único (`UUID`), establece su caducidad en 1 hora y envía un correo HTML corporativo con el enlace de recuperación.
+   - **Restablecimiento (`POST /auth/restablecer-contrasena`)**: Valida que el token sea legítimo, no haya expirado y no haya sido utilizado. Hashea la nueva contraseña con BCrypt, actualiza las credenciales del usuario y marca el token como consumido de manera atómica transaccional.
 
 ---
 
@@ -86,7 +90,7 @@ El ecosistema opera bajo un modelo desacoplado **Cliente-Servidor (SPA / SSR Hí
   - `spring-boot-starter-security`: Filtros de seguridad, autenticación stateless y RBAC.
   - `spring-boot-starter-validation`: Validación declarativa de DTOs con Hibernate Validator.
   - `spring-boot-starter-mail`: Envío de correos electrónicos transaccionales (implementación Angus Mail).
-- **Migraciones de BD**: Flyway Migration (V1 a V8).
+- **Migraciones de BD**: Flyway Migration (V1 a V9).
 - **Tokens**: `io.jsonwebtoken (jjwt-api, jjwt-impl, jjwt-jackson)` versión 0.12.6.
 - **Entorno**: `io.github.cdimascio:dotenv-java:3.0.0` para desacoplamiento estricto de secretos.
 
@@ -98,7 +102,7 @@ El ecosistema opera bajo un modelo desacoplado **Cliente-Servidor (SPA / SSR Hí
 2. **Google Identity Services / Supabase Auth**:
    - Proveedor de identidad OAuth2 para inicio de sesión en 1 clic.
 3. **Google SMTP Gateway (`smtp.gmail.com:587`)**:
-   - Conexión segura con STARTTLS para el despacho asíncrono de correos HTML con plantillas personalizadas (felicitación + enlace a WhatsApp en aprobaciones; justificación de rechazo y contacto oficial en declinaciones).
+   - Conexión segura con STARTTLS para el despacho asíncrono de correos HTML con plantillas personalizadas (felicitación + enlace a WhatsApp en aprobaciones; justificación de rechazo y contacto oficial en declinaciones; y enlace de un solo uso con token de vigencia temporal para recuperación de contraseñas).
 
 ---
 
@@ -113,6 +117,8 @@ A continuación se detalla la totalidad de los endpoints operativos del Backend 
 | `POST` | `/auth/registro` | Público | Registra una cuenta de cliente con validación estricta de contraseña y documento. | `RegistroUsuarioRequestDto` | `UsuarioPerfilResponseDto` |
 | `POST` | `/auth/login` | Público | Autentica un usuario por correo/contraseña y devuelve el JWT y perfil básico. | `LoginRequestDto` | `LoginResponseDto` |
 | `POST` | `/auth/google` | Público | Autentica o provisiona una cuenta mediante token de identidad Google/Supabase. | `GoogleAuthRequestDto` | `LoginResponseDto` |
+| `POST` | `/auth/recuperar-contrasena` | Público | Valida la existencia del correo en el sistema (`findByCorreoIgnoreCase`), invalida tokens previos, genera un token temporal (1h) y envía el correo con enlace de recuperación. | `RecuperarContrasenaRequestDto` | `MensajeResponseDto` |
+| `POST` | `/auth/restablecer-contrasena` | Público | Valida el token temporal recibido, actualiza la contraseña con BCrypt y marca el token como utilizado. | `RestablecerContrasenaRequestDto` | `MensajeResponseDto` |
 
 ### 4.2 Módulo de Viajes (`/viajes`)
 
@@ -187,6 +193,7 @@ erDiagram
     reserva ||--o{ respuesta_formulario : "responde"
     campo_formulario ||--o{ respuesta_formulario : "asociado a"
     viaje ||--o{ notificacion : "referencia (opcional)"
+    usuario ||--o{ token_recuperacion : "genera"
 
     usuario {
         bigserial id_usuario PK
@@ -197,13 +204,22 @@ erDiagram
         varchar correo UK
         varchar contrasena_hash
         varchar rol
-        varchar telefono
+        telefono varchar
         varchar sexo
         varchar nacionalidad
         varchar tipo_identificacion
         varchar numero_identificacion
         boolean notificaciones_habilitadas
         timestamptz fecha_registro
+    }
+
+    token_recuperacion {
+        bigserial id_token PK
+        bigint id_usuario FK
+        varchar token UK
+        timestamptz fecha_expiracion
+        boolean usado
+        timestamptz fecha_creacion
     }
 
     viaje {
@@ -283,7 +299,7 @@ erDiagram
 
 ---
 
-### 5.2 Evolución Histórica de Migraciones (V1 a V8)
+### 5.2 Evolución Histórica de Migraciones (V1 a V9)
 
 | Migración | Propósito y Ajustes Técnicos | Impacto Arquitectónico y Razón de Cambio |
 | :--- | :--- | :--- |
@@ -295,6 +311,7 @@ erDiagram
 | **`V6__drop_inclusiones_itinerario...`** | **Elimina definitivamente** las tablas redundantes `inclusiones`, `itinerario` y `equipo`, consolidando toda la ficha informativa dentro de `viaje.descripcion` en formato **Markdown enriquecido**. | Reduce llamadas de consulta redundantes, simplifica el CRUD administrativo y dota al administrador de control editorial completo mediante el `MarkdownEditor`. |
 | **`V7__alter_reserva_captura_url_text.sql`** | Garantiza idempotentemente que `captura_comprobante_url` sea `TEXT`. | Soporta almacenamiento de URLs de Supabase Storage de cualquier longitud sin desbordar el antiguo límite `VARCHAR(255)`. |
 | **`V8__add_id_viaje_and_expand_tipo...`** | Agrega `id_viaje BIGINT REFERENCES viaje` a `notificacion` y elimina las restricciones CHECK en la columna `tipo`. | Permite notificaciones contextuales directas a la ficha del viaje y habilita nuevos tipos como `nueva_reserva_admin`. |
+| **`V9__create_token_recuperacion.sql`** | Crea la tabla `token_recuperacion` con FK hacia `usuario`, índice único sobre `token`, marcas temporales y control de expiración (`timestamptz`) y uso (`usado boolean`). | Establece la infraestructura relacional segura para el flujo de restablecimiento de contraseña por correo electrónico, previniendo reusos y ataques de repetición. |
 
 ---
 
@@ -331,6 +348,26 @@ A lo largo del desarrollo de la unión de ambos proyectos surgieron contrastes a
 ### 6. Autenticación Dual (Híbrida)
 - **Problema Inicial**: Discrepancias entre sesiones mock del cliente y el modelo de seguridad stateless de Spring Boot.
 - **Solución Beta**: Unificación de la sesión mediante cookies y tokens Bearer. El usuario puede iniciar sesión tanto con sus credenciales tradicionales como con Google en un solo clic, obteniendo el mismo contrato de perfil y permisos RBAC garantizados por Spring Security.
+
+### 7. Recuperación de Cuentas: Validación Estricta de Existencia vs. Flujo Asíncrono de Tokens
+- **Problema Inicial**: Si un usuario olvidaba su contraseña, no existía un mecanismo para reestablecerla de forma autónoma. Un enfoque genérico y silencioso ("Si el correo existe, te llegará un enlace") causaba desinformación si el usuario cometía errores ortográficos o variaciones de mayúsculas/minúsculas en su correo electrónico.
+- **Solución Beta**:
+  - Validación explícita de existencia mediante `findByCorreoIgnoreCase` en el backend, arrojando error HTTP 400 claro e inmediato si el correo no pertenece a ningún usuario registrado en la plataforma.
+  - Generación de tokens seguros y únicos persistidos en la base de datos (`token_recuperacion`) con expiración forzada de 1 hora e invalidación previa de tokens no utilizados.
+  - Despacho de correo HTML corporativo con enlace directo y validación estricta de nueva contraseña en el frontend (mínimo 6 caracteres y confirmación coincidente).
+  - Integración en la interfaz de login mediante el enlace "¿Olvidaste tu contraseña?" a la derecha del campo de contraseña.
+
+### 8. Paginación y Remaquetación de Viajeros y Cuestionarios Dinámicos
+- **Problema Inicial**: En el proceso de inscripción a una expedición, todos los datos del titular, múltiples acompañantes y sus respectivos campos dinámicos se presentaban en un solo formulario vertical extenso, provocando fatiga visual y riesgo de pérdida de datos.
+- **Solución Beta**: Se remaquetó el componente `PasoViajeros` estructurándolo en un sub-flujo secuencial paginado, limpio y centrado en la pantalla (análogo a la experiencia de edición de perfil):
+  - Cada participante (titular o acompañante individual) cuenta con su propia pantalla enfocada.
+  - Validación paso a paso de los datos de cada persona antes de avanzar al paso de confirmación y pago.
+
+### 9. Consistencia en Ciclo de Vida de Sesión y Depuración de Navegación
+- **Problema Inicial**: El cierre de sesión presentaba inconsistencias de redirección, y el panel de reservas del usuario contaba con un botón redundante ("Nueva Reserva") que cumplía exactamente la misma función que "Explorar viajes".
+- **Solución Beta**:
+  - Matriz de redirecciones estandarizada: El cierre de sesión tanto para administradores como para clientes redirige inequívocamente a `/iniciar-sesion`. El inicio de sesión de un administrador redirige inmediatamente a `/admin`; el de un cliente a `/viajes` (o la ruta de redirección previa `redir`). Si se cancela el login, regresa a la portada principal `/`.
+  - Eliminación del botón redundante "Nueva Reserva", dejando "Explorar viajes" como la única acción canónica hacia el catálogo.
 
 ---
 

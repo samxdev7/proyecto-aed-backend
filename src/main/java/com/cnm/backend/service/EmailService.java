@@ -92,12 +92,16 @@ public class EmailService {
             String nombreUsuario,
             String enlaceRecuperacion
     ) {
-        if (!validarConfiguracion(destinatario)) return;
+        log.info("Iniciando envío de correo de recuperación hacia: {}", destinatario);
+        if (!validarConfiguracion(destinatario)) {
+            log.error("No se pudo enviar correo de recuperación a {}: JavaMailSender o variables SMTP no configuradas.", destinatario);
+            return;
+        }
 
         String asunto = "Restablece tu contraseña | Club Nicaragüense de Montañismo";
         String contenidoHtml = construirPlantillaRecuperacion(nombreUsuario, enlaceRecuperacion);
 
-        enviarCorreoHtml(destinatario, asunto, contenidoHtml);
+        enviarCorreoHtml(destinatario.trim(), asunto, contenidoHtml);
     }
 
     private boolean validarConfiguracion(String destinatario) {
@@ -123,7 +127,7 @@ public class EmailService {
 
             String remitenteFinal = (remitente != null && !remitente.isBlank()) ? remitente : mailUsername;
             helper.setFrom(remitenteFinal, "Club Nicaragüense de Montañismo");
-            helper.setTo(destinatario);
+            helper.setTo(destinatario.trim());
             helper.setSubject(asunto);
             helper.setText(cuerpoHtml, true);
 
