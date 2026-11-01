@@ -83,6 +83,27 @@ public class EmailService {
         enviarCorreoHtml(destinatario, asunto, contenidoHtml);
     }
 
+    /**
+     * Envía correo con el enlace seguro y temporal para restablecer la contraseña olvidada.
+     */
+    @Async
+    public void enviarCorreoRecuperacionContrasena(
+            String destinatario,
+            String nombreUsuario,
+            String enlaceRecuperacion
+    ) {
+        log.info("Iniciando envío de correo de recuperación hacia: {}", destinatario);
+        if (!validarConfiguracion(destinatario)) {
+            log.error("No se pudo enviar correo de recuperación a {}: JavaMailSender o variables SMTP no configuradas.", destinatario);
+            return;
+        }
+
+        String asunto = "Restablece tu contraseña | Club Nicaragüense de Montañismo";
+        String contenidoHtml = construirPlantillaRecuperacion(nombreUsuario, enlaceRecuperacion);
+
+        enviarCorreoHtml(destinatario.trim(), asunto, contenidoHtml);
+    }
+
     private boolean validarConfiguracion(String destinatario) {
         if (mailSender == null) {
             log.warn("Servicio de correo: JavaMailSender no está configurado. No se enviará correo a {}", destinatario);
@@ -106,7 +127,7 @@ public class EmailService {
 
             String remitenteFinal = (remitente != null && !remitente.isBlank()) ? remitente : mailUsername;
             helper.setFrom(remitenteFinal, "Club Nicaragüense de Montañismo");
-            helper.setTo(destinatario);
+            helper.setTo(destinatario.trim());
             helper.setSubject(asunto);
             helper.setText(cuerpoHtml, true);
 
@@ -187,6 +208,42 @@ public class EmailService {
                 + "<p style=\"color: #334155; line-height: 1.6; font-size: 15px;\">"
                 + "Si consideras que se trata de un error o deseas subsanar tu comprobante, por favor ponte en contacto directamente con nosotros a través de nuestros canales oficiales que encontrarás al pie de este correo."
                 + "</p>"
+                + "</div>";
+
+        return envolverEnPlantillaBase(contenido);
+    }
+
+    private String construirPlantillaRecuperacion(
+            String nombreUsuario,
+            String enlaceRecuperacion
+    ) {
+        String nombre = (nombreUsuario != null && !nombreUsuario.isBlank()) ? nombreUsuario : "Estimado(a) montañista";
+
+        String contenido = "<div style=\"margin-bottom: 24px;\">"
+                + "<div style=\"display: inline-block; background-color: #FEF3C7; color: #92400E; font-size: 13px; font-weight: bold; padding: 4px 12px; border-radius: 9999px; margin-bottom: 12px;\">"
+                + "🔒 SEGURIDAD DE LA CUENTA"
+                + "</div>"
+                + "<h2 style=\"color: #1A2B4C; margin-top: 0; margin-bottom: 12px; font-size: 22px;\">Restablece tu contraseña</h2>"
+                + "<p style=\"color: #334155; line-height: 1.6; font-size: 15px;\">"
+                + "Hola <strong>" + escapeHtml(nombre) + "</strong>,"
+                + "</p>"
+                + "<p style=\"color: #334155; line-height: 1.6; font-size: 15px;\">"
+                + "Recibimos una solicitud para restablecer la contraseña asociada a tu cuenta en el Club Nicaragüense de Montañismo. Para crear una nueva clave y acceder nuevamente a tu perfil y reservas, haz clic en el siguiente botón:"
+                + "</p>"
+                + "<div style=\"text-align: center; margin: 30px 0;\">"
+                + "<a href=\"" + enlaceRecuperacion + "\" target=\"_blank\" style=\"background-color: #1A2B4C; color: #FFFFFF; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);\">"
+                + "Restablecer mi contraseña"
+                + "</a>"
+                + "</div>"
+                + "<p style=\"font-size: 14px; color: #64748B; text-align: center; margin-top: 5px;\">"
+                + "O copia y pega este enlace seguro en tu navegador:<br/>"
+                + "<a href=\"" + enlaceRecuperacion + "\" style=\"color: #0284C7; word-break: break-all;\">" + enlaceRecuperacion + "</a>"
+                + "</p>"
+                + "<div style=\"background-color: #F1F5F9; border-left: 4px solid #64748B; padding: 14px; border-radius: 6px; margin: 25px 0;\">"
+                + "<p style=\"margin: 0; color: #475569; font-size: 13px; line-height: 1.5;\">"
+                + "⚠️ <strong>Aviso de seguridad:</strong> Este enlace es de un solo uso y expirará automáticamente en <strong>1 hora</strong>. Si no solicitaste este cambio, puedes ignorar este mensaje; tu contraseña actual continuará siendo segura."
+                + "</p>"
+                + "</div>"
                 + "</div>";
 
         return envolverEnPlantillaBase(contenido);
