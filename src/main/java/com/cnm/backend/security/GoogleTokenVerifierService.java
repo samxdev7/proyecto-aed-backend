@@ -1,6 +1,8 @@
 package com.cnm.backend.security;
 
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -8,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,7 +21,9 @@ import java.util.Map;
 @Service
 public class GoogleTokenVerifierService {
 
-    private final String expectedClientId;
+    private static final Logger log = LoggerFactory.getLogger(GoogleTokenVerifierService.class);
+
+    private final List<String> expectedClientIds;
     private final String supabaseUrl;
     private final String supabaseAnonKey;
     private final RestClient restClient;
@@ -36,12 +42,31 @@ public class GoogleTokenVerifierService {
             @Value("${app.supabase.url:}") String supabaseUrl,
             @Value("${app.supabase.anon-key:}") String supabaseAnonKey,
             JwtService jwtService) {
-        this.expectedClientId = expectedClientId;
+        if (expectedClientId == null || expectedClientId.isBlank()) {
+            this.expectedClientIds = List.of();
+        } else {
+            this.expectedClientIds = Arrays.stream(expectedClientId.split(","))
+                    .map(String::trim)
+                    .map(s -> s.replace("\"", "").replace("'", ""))
+                    .filter(s -> !s.isEmpty())
+                    .toList();
+        }
         this.supabaseUrl = supabaseUrl != null ? supabaseUrl.trim() : "";
         this.supabaseAnonKey = supabaseAnonKey != null ? supabaseAnonKey.trim() : "";
         this.restClient = RestClient.create();
         this.jwtService = jwtService;
     }
+
+    boolean esAudienceValido(String aud) {
+        if (expectedClientIds.isEmpty()) {
+            return true;
+        }
+        if (aud == null || aud.isBlank()) {
+            return false;
+        }
+        return expectedClientIds.contains(aud.trim());
+    }
+
 
     public GoogleUserInfo verificar(String token) {
         if (token == null || token.isBlank()) {
@@ -203,11 +228,10 @@ public class GoogleTokenVerifierService {
 
         // Validar audience
         String aud = (String) body.get("aud");
-        if (expectedClientId != null && !expectedClientId.isBlank()) {
-            if (!expectedClientId.equals(aud)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                        "El token de Google no corresponde a esta aplicación (Client ID mismatch)");
-            }
+        if (!esAudienceValido(aud)) {
+            log.warn("Google Client ID mismatch: aud recibido [{}] no coincide con los IDs autorizados en backend {}", aud, expectedClientIds);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "El token de Google no corresponde a esta aplicación (Client ID mismatch)");
         }
 
         // Validar correo verificado
