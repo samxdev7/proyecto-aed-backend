@@ -99,6 +99,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
                 // Públicos
+                .requestMatchers("/auth/diagnostico-email/**", "/auth/diagnostico-email").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login", "/auth/google", "/auth/recuperar-contrasena", "/auth/restablecer-contrasena").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes", "/viajes/*/campos-formulario").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes/archivados").permitAll()

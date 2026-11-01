@@ -6,16 +6,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Servicio encargado de la generación y envío de correos electrónicos institucionales
  * del Club Nicaragüense de Montañismo (aprobación de cupo, rechazo con justificación, etc.).
+ * Soporta SMTP estándar (JavaMail), Resend HTTP API (HTTPS puerto 443) y Brevo HTTP API (HTTPS puerto 443)
+ * para garantizar operatividad en plataformas como Render Free Tier donde los puertos SMTP 25, 465 y 587 son bloqueados.
  */
 @Service
 public class EmailService {
@@ -32,17 +41,31 @@ public class EmailService {
     private final String remitente;
     private final String mailHost;
     private final String mailUsername;
+    private final String mailPassword;
+    private final int mailPort;
+    private final String resendApiKey;
+    private final String brevoApiKey;
+    private final RestClient restClient;
 
     public EmailService(
             @Autowired(required = false) JavaMailSender mailSender,
             @Value("${app.mail.from:}") String remitente,
             @Value("${spring.mail.host:}") String mailHost,
-            @Value("${spring.mail.username:}") String mailUsername
+            @Value("${spring.mail.username:}") String mailUsername,
+            @Value("${spring.mail.password:}") String mailPassword,
+            @Value("${spring.mail.port:587}") int mailPort,
+            @Value("${app.mail.resend-api-key:}") String resendApiKey,
+            @Value("${app.mail.brevo-api-key:}") String brevoApiKey
     ) {
         this.mailSender = mailSender;
-        this.remitente = remitente;
-        this.mailHost = mailHost;
-        this.mailUsername = mailUsername;
+        this.remitente = remitente != null ? remitente.trim() : "";
+        this.mailHost = mailHost != null ? mailHost.trim() : "";
+        this.mailUsername = mailUsername != null ? mailUsername.trim() : "";
+        this.mailPassword = mailPassword != null ? mailPassword.trim() : "";
+        this.mailPort = mailPort > 0 ? mailPort : 587;
+        this.resendApiKey = resendApiKey != null ? resendApiKey.trim() : "";
+        this.brevoApiKey = brevoApiKey != null ? brevoApiKey.trim() : "";
+        this.restClient = RestClient.create();
     }
 
     /**
@@ -104,38 +127,176 @@ public class EmailService {
         enviarCorreoHtml(destinatario.trim(), asunto, contenidoHtml);
     }
 
-    private boolean validarConfiguracion(String destinatario) {
-        if (mailSender == null) {
-            log.warn("Servicio de correo: JavaMailSender no está configurado. No se enviará correo a {}", destinatario);
-            return false;
-        }
+    boolean validarConfiguracion(String destinatario) {
         if (destinatario == null || destinatario.isBlank()) {
             log.warn("Servicio de correo: Destinatario nulo o vacío. No se enviará correo.");
             return false;
         }
-        if (mailHost == null || mailHost.isBlank() || mailUsername == null || mailUsername.isBlank()) {
+
+        // Si Resend o Brevo están configurados vía HTTPS, no se necesita JavaMailSender ni SMTP
+        if (!resendApiKey.isBlank() || !brevoApiKey.isBlank()) {
+            return true;
+        }
+
+        // Si se usa SMTP tradicional
+        if (mailSender == null) {
+            log.warn("Servicio de correo: JavaMailSender no está disponible ni se configuró proveedor HTTP (Resend o Brevo). No se enviará correo a {}", destinatario);
+            return false;
+        }
+        if (mailHost.isBlank() || mailUsername.isBlank()) {
             log.warn("Servicio de correo: Variables SMTP no configuradas en el entorno (MAIL_HOST o MAIL_USERNAME vacíos). Configure las variables de correo para enviar correos a {}.", destinatario);
             return false;
         }
         return true;
     }
 
-    private void enviarCorreoHtml(String destinatario, String asunto, String cuerpoHtml) {
-        try {
-            MimeMessage mensaje = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mensaje, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
-
-            String remitenteFinal = (remitente != null && !remitente.isBlank()) ? remitente : mailUsername;
-            helper.setFrom(remitenteFinal, "Club Nicaragüense de Montañismo");
-            helper.setTo(destinatario.trim());
-            helper.setSubject(asunto);
-            helper.setText(cuerpoHtml, true);
-
-            mailSender.send(mensaje);
-            log.info("Correo enviado exitosamente a {} con asunto '{}'", destinatario, asunto);
-        } catch (Exception e) {
-            log.error("Error al enviar correo a {} con asunto '{}': {}. Verifique la configuración SMTP en el servidor.", destinatario, asunto, e.getMessage(), e);
+    public void enviarCorreoHtml(String destinatario, String asunto, String cuerpoHtml) {
+        // 1. Intentar envío vía Resend HTTP API (HTTPS puerto 443 - Inmune a bloqueos de firewall SMTP de Render)
+        if (!resendApiKey.isBlank()) {
+            try {
+                enviarViaResend(destinatario, asunto, cuerpoHtml);
+                return;
+            } catch (Exception ex) {
+                log.error("Fallo al enviar correo vía Resend API hacia {}: {}", destinatario, ex.getMessage(), ex);
+                if (mailSender == null || mailHost.isBlank()) {
+                    return;
+                }
+            }
         }
+
+        // 2. Intentar envío vía Brevo HTTP API (HTTPS puerto 443)
+        if (!brevoApiKey.isBlank()) {
+            try {
+                enviarViaBrevo(destinatario, asunto, cuerpoHtml);
+                return;
+            } catch (Exception ex) {
+                log.error("Fallo al enviar correo vía Brevo API hacia {}: {}", destinatario, ex.getMessage(), ex);
+                if (mailSender == null || mailHost.isBlank()) {
+                    return;
+                }
+            }
+        }
+
+        // 3. Envío tradicional vía JavaMailSender (SMTP)
+        if (mailSender != null && !mailHost.isBlank()) {
+            try {
+                MimeMessage mensaje = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(mensaje, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+
+                String remitenteFinal = !remitente.isBlank() ? remitente : mailUsername;
+                helper.setFrom(remitenteFinal, "Club Nicaragüense de Montañismo");
+                helper.setTo(destinatario.trim());
+                helper.setSubject(asunto);
+                helper.setText(cuerpoHtml, true);
+
+                mailSender.send(mensaje);
+                log.info("Correo enviado exitosamente vía SMTP a {} con asunto '{}'", destinatario, asunto);
+            } catch (Exception e) {
+                log.error("Error al enviar correo vía SMTP a {} con asunto '{}': {}. " +
+                        "DIAGNÓSTICO IMPORTANTE: Render Free Tier bloquea por firewall los puertos SMTP 25, 465 y 587. " +
+                        "Si la aplicación está alojada en Render Free, los paquetes a smtp.gmail.com:587 son descartados y la conexión expira con timeout. " +
+                        "Para solucionarlo en Render Free Tier sin costo, configure RESEND_API_KEY o BREVO_API_KEY para enviar vía HTTPS (puerto 443).",
+                        destinatario, asunto, e.getMessage(), e);
+            }
+        } else {
+            log.warn("No hay proveedor de correo configurado para enviar a {}", destinatario);
+        }
+    }
+
+    private void enviarViaResend(String destinatario, String asunto, String cuerpoHtml) {
+        String fromAddress = !remitente.isBlank() && remitente.contains("@") && !remitente.contains("gmail.com")
+                ? "Club Nicaragüense de Montañismo <" + remitente + ">"
+                : "Club Nicaragüense de Montañismo <onboarding@resend.dev>";
+
+        Map<String, Object> payload = Map.of(
+                "from", fromAddress,
+                "to", List.of(destinatario.trim()),
+                "subject", asunto,
+                "html", cuerpoHtml
+        );
+
+        restClient.post()
+                .uri("https://api.resend.com/emails")
+                .header("Authorization", "Bearer " + resendApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(payload)
+                .retrieve()
+                .toBodilessEntity();
+
+        log.info("Correo enviado exitosamente vía Resend HTTP API (HTTPS) a {} con asunto '{}'", destinatario, asunto);
+    }
+
+    private void enviarViaBrevo(String destinatario, String asunto, String cuerpoHtml) {
+        String senderEmail = !remitente.isBlank() ? remitente : (!mailUsername.isBlank() ? mailUsername : "contacto@clubnicaraguensemontanismo.org");
+
+        Map<String, Object> payload = Map.of(
+                "sender", Map.of("name", "Club Nicaragüense de Montañismo", "email", senderEmail),
+                "to", List.of(Map.of("email", destinatario.trim())),
+                "subject", asunto,
+                "htmlContent", cuerpoHtml
+        );
+
+        restClient.post()
+                .uri("https://api.brevo.com/v3/smtp/email")
+                .header("api-key", brevoApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(payload)
+                .retrieve()
+                .toBodilessEntity();
+
+        log.info("Correo enviado exitosamente vía Brevo HTTP API (HTTPS) a {} con asunto '{}'", destinatario, asunto);
+    }
+
+    public Map<String, Object> obtenerDiagnostico() {
+        Map<String, Object> diag = new LinkedHashMap<>();
+
+        boolean resendActivo = !resendApiKey.isBlank();
+        boolean brevoActivo = !brevoApiKey.isBlank();
+        boolean smtpConfigurado = !mailHost.isBlank() && !mailUsername.isBlank();
+
+        diag.put("resendConfigurado", resendActivo);
+        diag.put("brevoConfigurado", brevoActivo);
+        diag.put("smtpConfigurado", smtpConfigurado);
+        diag.put("smtpHost", mailHost);
+        diag.put("smtpPort", mailPort);
+        diag.put("smtpUsername", enmascararCorreo(mailUsername));
+        diag.put("smtpPasswordPresente", !mailPassword.isBlank());
+
+        boolean socketOk = false;
+        String socketMensaje = "No probado";
+        if (smtpConfigurado) {
+            int port = (mailPort > 0) ? mailPort : 587;
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress(mailHost, port), 2500);
+                socketOk = true;
+                socketMensaje = "Conexión TCP exitosa con " + mailHost + ":" + port;
+            } catch (Exception ex) {
+                socketOk = false;
+                socketMensaje = "Conexión TCP fallida (" + ex.getClass().getSimpleName() + ": " + ex.getMessage() +
+                        "). En Render Free Tier, los puertos SMTP 25, 465 y 587 están bloqueados por el firewall de Render. Use Resend o Brevo vía HTTPS (puerto 443).";
+            }
+        }
+        diag.put("smtpSocketConectado", socketOk);
+        diag.put("smtpSocketMensaje", socketMensaje);
+
+        if (resendActivo) {
+            diag.put("proveedorActivo", "RESEND_HTTP_API (HTTPS puerto 443)");
+        } else if (brevoActivo) {
+            diag.put("proveedorActivo", "BREVO_HTTP_API (HTTPS puerto 443)");
+        } else if (smtpConfigurado) {
+            diag.put("proveedorActivo", "SMTP_JAVA_MAIL (" + mailHost + ":" + mailPort + ")");
+        } else {
+            diag.put("proveedorActivo", "NINGUNO (Variables de correo no configuradas)");
+        }
+
+        return diag;
+    }
+
+    private String enmascararCorreo(String correo) {
+        if (correo == null || correo.isBlank()) return "no configurado";
+        int at = correo.indexOf('@');
+        if (at <= 1) return "***" + correo.substring(Math.max(0, at));
+        return correo.charAt(0) + "***" + correo.substring(at);
     }
 
     private String construirPlantillaAprobacion(
