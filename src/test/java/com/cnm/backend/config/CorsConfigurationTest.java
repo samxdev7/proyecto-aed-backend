@@ -57,6 +57,30 @@ class CorsConfigurationTest {
     }
 
     @Test
+    @DisplayName("Auto-expande comodines para despliegues preview de Vercel cuando solo se configura el dominio base")
+    void cors_conSoloDominioBaseVercel_permitePreviewsDinamicos() {
+        ReflectionTestUtils.setField(securityConfig, "corsOrigenes", "https://cnm-inscripcion.vercel.app");
+        CorsConfigurationSource source = securityConfig.corsConfigurationSource();
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/viajes");
+        CorsConfiguration config = source.getCorsConfiguration(request);
+        assertNotNull(config);
+
+        // Producción debe funcionar
+        assertEquals("https://cnm-inscripcion.vercel.app", config.checkOrigin("https://cnm-inscripcion.vercel.app"));
+
+        // Previews de Vercel (con hash y rama generados por Vercel) deben ser permitidos automáticamente
+        assertEquals("https://cnm-inscripcion-1c4seq0qg-anti-pseint.vercel.app",
+                config.checkOrigin("https://cnm-inscripcion-1c4seq0qg-anti-pseint.vercel.app"));
+        assertEquals("https://cnm-inscripcion-git-beta-ver-anti-pseint.vercel.app",
+                config.checkOrigin("https://cnm-inscripcion-git-beta-ver-anti-pseint.vercel.app"));
+
+        // No debe permitir sitios maliciosos arbitrarios
+        assertNull(config.checkOrigin("https://malicious-site.com"));
+    }
+
+
+    @Test
     @DisplayName("Permite todos los encabezados HTTP (Accept, Authorization, Content-Type, etc.) para evitar rechazos en preflight")
     void cors_permiteTodosLosHeadersEnPreflight() {
         ReflectionTestUtils.setField(securityConfig, "corsOrigenes", "*");
