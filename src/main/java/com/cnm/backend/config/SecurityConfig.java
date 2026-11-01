@@ -45,13 +45,26 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        List<String> origenes = Arrays.stream(corsOrigenes.split(","))
-                .map(String::trim)
-                .filter(origen -> !origen.isEmpty())
-                .toList();
+        List<String> origenes;
+        if (corsOrigenes == null || corsOrigenes.isBlank() || corsOrigenes.trim().equals("*")) {
+            origenes = List.of("*");
+        } else {
+            origenes = Arrays.stream(corsOrigenes.split(","))
+                    .map(String::trim)
+                    .filter(origen -> !origen.isEmpty())
+                    .toList();
+            if (origenes.isEmpty() || origenes.contains("*")) {
+                origenes = List.of("*");
+            }
+        }
+
         config.setAllowedOriginPatterns(origenes);
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type", "Content-Disposition", "X-Total-Count"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
@@ -71,6 +84,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
                 // Públicos
                 .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login", "/auth/google", "/auth/recuperar-contrasena", "/auth/restablecer-contrasena").permitAll()
