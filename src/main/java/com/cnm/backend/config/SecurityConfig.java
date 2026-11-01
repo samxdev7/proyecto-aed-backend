@@ -20,8 +20,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -49,12 +52,21 @@ public class SecurityConfig {
         if (corsOrigenes == null || corsOrigenes.isBlank() || corsOrigenes.trim().equals("*")) {
             origenes = List.of("*");
         } else {
-            origenes = Arrays.stream(corsOrigenes.split(","))
+            List<String> parsed = Arrays.stream(corsOrigenes.split(","))
                     .map(String::trim)
                     .filter(origen -> !origen.isEmpty())
                     .toList();
-            if (origenes.isEmpty() || origenes.contains("*")) {
+            if (parsed.isEmpty() || parsed.contains("*")) {
                 origenes = List.of("*");
+            } else {
+                Set<String> set = new LinkedHashSet<>(parsed);
+                // Si se configuró cualquier dominio de Vercel, auto-expandir comodines para cubrir despliegues preview
+                if (parsed.stream().anyMatch(o -> o.contains("vercel.app"))) {
+                    set.add("https://*.vercel.app");
+                }
+                set.add("http://localhost:[*]");
+                set.add("http://127.0.0.1:[*]");
+                origenes = new ArrayList<>(set);
             }
         }
 
@@ -87,6 +99,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
                 // Públicos
+                .requestMatchers(HttpMethod.GET, "/auth/diagnostico-email").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/diagnostico-email/**").permitAll()
+                .requestMatchers("/auth/diagnostico-email/**", "/auth/diagnostico-email").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/registro", "/auth/login", "/auth/google", "/auth/recuperar-contrasena", "/auth/restablecer-contrasena").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes", "/viajes/*/campos-formulario").permitAll()
                 .requestMatchers(HttpMethod.GET, "/viajes/archivados").permitAll()
