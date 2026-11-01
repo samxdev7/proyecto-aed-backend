@@ -43,6 +43,8 @@ public class EmailService {
     private final String mailUsername;
     private final String mailPassword;
     private final int mailPort;
+    private final String relayUrl;
+    private final String relaySecret;
     private final String resendApiKey;
     private final String brevoApiKey;
     private final RestClient restClient;
@@ -54,6 +56,8 @@ public class EmailService {
             @Value("${spring.mail.username:}") String mailUsername,
             @Value("${spring.mail.password:}") String mailPassword,
             @Value("${spring.mail.port:587}") int mailPort,
+            @Value("${app.mail.relay-url:}") String relayUrl,
+            @Value("${app.mail.relay-secret:}") String relaySecret,
             @Value("${app.mail.resend-api-key:}") String resendApiKey,
             @Value("${app.mail.brevo-api-key:}") String brevoApiKey
     ) {
@@ -63,6 +67,8 @@ public class EmailService {
         this.mailUsername = mailUsername != null ? mailUsername.trim() : "";
         this.mailPassword = mailPassword != null ? mailPassword.trim() : "";
         this.mailPort = mailPort > 0 ? mailPort : 587;
+        this.relayUrl = relayUrl != null ? relayUrl.trim() : "";
+        this.relaySecret = relaySecret != null ? relaySecret.trim() : "";
         this.resendApiKey = resendApiKey != null ? resendApiKey.trim() : "";
         this.brevoApiKey = brevoApiKey != null ? brevoApiKey.trim() : "";
         this.restClient = RestClient.create();
@@ -133,14 +139,14 @@ public class EmailService {
             return false;
         }
 
-        // Si Resend o Brevo están configurados vía HTTPS, no se necesita JavaMailSender ni SMTP
-        if (!resendApiKey.isBlank() || !brevoApiKey.isBlank()) {
+        // Si el Relay Vercel, Resend o Brevo están configurados vía HTTPS, no se necesita JavaMailSender ni SMTP directo
+        if (!relayUrl.isBlank() || !resendApiKey.isBlank() || !brevoApiKey.isBlank()) {
             return true;
         }
 
         // Si se usa SMTP tradicional
         if (mailSender == null) {
-            log.warn("Servicio de correo: JavaMailSender no está disponible ni se configuró proveedor HTTP (Resend o Brevo). No se enviará correo a {}", destinatario);
+            log.warn("Servicio de correo: JavaMailSender no está disponible ni se configuró proveedor HTTP/Relay (Vercel, Resend o Brevo). No se enviará correo a {}", destinatario);
             return false;
         }
         if (mailHost.isBlank() || mailUsername.isBlank()) {
@@ -151,7 +157,20 @@ public class EmailService {
     }
 
     public void enviarCorreoHtml(String destinatario, String asunto, String cuerpoHtml) {
-        // 1. Intentar envío vía Resend HTTP API (HTTPS puerto 443 - Inmune a bloqueos de firewall SMTP de Render)
+        // 1. Intentar envío vía Relay Serverless Next.js en Vercel (HTTPS puerto 443 - Google SMTP gratuito)
+        if (!relayUrl.isBlank()) {
+            try {
+                enviarViaRelayVercel(destinatario, asunto, cuerpoHtml);
+                return;
+            } catch (Exception ex) {
+                log.error("Fallo al enviar correo vía Relay Vercel hacia {}: {}", destinatario, ex.getMessage(), ex);
+                if (resendApiKey.isBlank() && brevoApiKey.isBlank() && (mailSender == null || mailHost.isBlank())) {
+                    return;
+                }
+            }
+        }
+
+        // 2. Intentar envío vía Resend HTTP API (HTTPS puerto 443 - Inmune a bloqueos de firewall SMTP de Render)
         if (!resendApiKey.isBlank()) {
             try {
                 enviarViaResend(destinatario, asunto, cuerpoHtml);
@@ -164,7 +183,7 @@ public class EmailService {
             }
         }
 
-        // 2. Intentar envío vía Brevo HTTP API (HTTPS puerto 443)
+        // 3. Intentar envío vía Brevo HTTP API (HTTPS puerto 443)
         if (!brevoApiKey.isBlank()) {
             try {
                 enviarViaBrevo(destinatario, asunto, cuerpoHtml);
@@ -177,7 +196,7 @@ public class EmailService {
             }
         }
 
-        // 3. Envío tradicional vía JavaMailSender (SMTP)
+        // 4. Envío tradicional vía JavaMailSender (SMTP)
         if (mailSender != null && !mailHost.isBlank()) {
             try {
                 MimeMessage mensaje = mailSender.createMimeMessage();
@@ -195,12 +214,36 @@ public class EmailService {
                 log.error("Error al enviar correo vía SMTP a {} con asunto '{}': {}. " +
                         "DIAGNÓSTICO IMPORTANTE: Render Free Tier bloquea por firewall los puertos SMTP 25, 465 y 587. " +
                         "Si la aplicación está alojada en Render Free, los paquetes a smtp.gmail.com:587 son descartados y la conexión expira con timeout. " +
-                        "Para solucionarlo en Render Free Tier sin costo, configure RESEND_API_KEY o BREVO_API_KEY para enviar vía HTTPS (puerto 443).",
+                        "Para solucionarlo en Render Free Tier sin costo, configure MAIL_RELAY_URL (Vercel Relay), RESEND_API_KEY o BREVO_API_KEY para enviar vía HTTPS (puerto 443).",
                         destinatario, asunto, e.getMessage(), e);
             }
         } else {
             log.warn("No hay proveedor de correo configurado para enviar a {}", destinatario);
         }
+    }
+
+    private void enviarViaRelayVercel(String destinatario, String asunto, String cuerpoHtml) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("to", destinatario.trim());
+        payload.put("subject", asunto);
+        payload.put("html", cuerpoHtml);
+        if (!remitente.isBlank()) {
+            payload.put("from", remitente);
+        }
+
+        var requestSpec = restClient.post()
+                .uri(relayUrl)
+                .contentType(MediaType.APPLICATION_JSON);
+
+        if (!relaySecret.isBlank()) {
+            requestSpec.header("x-internal-secret", relaySecret);
+        }
+
+        requestSpec.body(payload)
+                .retrieve()
+                .toBodilessEntity();
+
+        log.info("Correo enviado exitosamente vía Relay Vercel (HTTPS puerto 443) a {} con asunto '{}'", destinatario, asunto);
     }
 
     private void enviarViaResend(String destinatario, String asunto, String cuerpoHtml) {
@@ -250,10 +293,14 @@ public class EmailService {
     public Map<String, Object> obtenerDiagnostico() {
         Map<String, Object> diag = new LinkedHashMap<>();
 
+        boolean relayActivo = !relayUrl.isBlank();
         boolean resendActivo = !resendApiKey.isBlank();
         boolean brevoActivo = !brevoApiKey.isBlank();
         boolean smtpConfigurado = !mailHost.isBlank() && !mailUsername.isBlank();
 
+        diag.put("relayConfigurado", relayActivo);
+        diag.put("relayUrl", relayUrl);
+        diag.put("relaySecretPresente", !relaySecret.isBlank());
         diag.put("resendConfigurado", resendActivo);
         diag.put("brevoConfigurado", brevoActivo);
         diag.put("smtpConfigurado", smtpConfigurado);
@@ -279,7 +326,9 @@ public class EmailService {
         diag.put("smtpSocketConectado", socketOk);
         diag.put("smtpSocketMensaje", socketMensaje);
 
-        if (resendActivo) {
+        if (relayActivo) {
+            diag.put("proveedorActivo", "VERCEL_RELAY (HTTPS puerto 443 -> Gmail SMTP)");
+        } else if (resendActivo) {
             diag.put("proveedorActivo", "RESEND_HTTP_API (HTTPS puerto 443)");
         } else if (brevoActivo) {
             diag.put("proveedorActivo", "BREVO_HTTP_API (HTTPS puerto 443)");

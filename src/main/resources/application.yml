@@ -44,6 +44,8 @@ app:
     url: ${FRONTEND_URL:http://localhost:3000}
   mail:
     from: ${MAIL_FROM:}
+    relay-url: ${MAIL_RELAY_URL:}
+    relay-secret: ${INTERNAL_EMAIL_SECRET:}
     resend-api-key: ${RESEND_API_KEY:}
     brevo-api-key: ${BREVO_API_KEY:}
   jwt:
