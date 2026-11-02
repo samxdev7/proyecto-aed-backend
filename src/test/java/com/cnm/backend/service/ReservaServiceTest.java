@@ -140,4 +140,44 @@ class ReservaServiceTest {
                 eq("Comprobante ilegible, monto no coincide")
         );
     }
+
+    @Test
+    void crearReserva_cuandoFaltanMenosDe7DiasParaSalida_lanzaBadRequestPorExpiracion() {
+        Usuario usuarioCompleto = new Usuario();
+        usuarioCompleto.setIdUsuario(10L);
+        usuarioCompleto.setPrimerNombre("Carlos");
+        usuarioCompleto.setPrimerApellido("Pérez");
+        usuarioCompleto.setNumeroIdentificacion("001-010190-0001A");
+        usuarioCompleto.setNacionalidad("Nicaragüense");
+        usuarioCompleto.setCorreo("carlos@example.com");
+
+        Viaje viajePorExpirar = new Viaje();
+        viajePorExpirar.setIdViaje(5L);
+        viajePorExpirar.setTitulo("Volcán Cosigüina");
+        viajePorExpirar.setEstado(com.cnm.backend.entity.Estado.activo);
+        viajePorExpirar.setArchivado(false);
+        // Salida dentro de 5 días (menos de 1 semana)
+        viajePorExpirar.setFechaHoraIda(ZonedDateTime.now().plusDays(5));
+        viajePorExpirar.setCuposDisponibles(10);
+        viajePorExpirar.setMontoReserva(BigDecimal.valueOf(500));
+
+        when(usuarioRepository.findById(10L)).thenReturn(Optional.of(usuarioCompleto));
+        when(viajeRepository.findById(5L)).thenReturn(Optional.of(viajePorExpirar));
+
+        com.cnm.backend.dto.reserva.CrearReservaRequestDto request = new com.cnm.backend.dto.reserva.CrearReservaRequestDto(
+                5L,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "REF-12345",
+                "https://ejemplo.com/voucher.jpg"
+        );
+
+        org.springframework.web.server.ResponseStatusException ex = assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> reservaService.crearReserva(10L, request)
+        );
+
+        assertEquals(org.springframework.http.HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertTrue(ex.getReason().contains("Las inscripciones para este viaje han expirado"));
+    }
 }
