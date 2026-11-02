@@ -159,8 +159,8 @@ public class UsuarioService {
                 .map(reserva -> {
                     Viaje viaje = viajeRepository.findById(reserva.getIdViaje()).orElse(null);
                     ViajeHistorialResumenDto viajeDto = (viaje != null)
-                            ? new ViajeHistorialResumenDto(viaje.getIdViaje(), viaje.getTitulo(), viaje.getDificultad(), viaje.getFechaHoraIda())
-                            : new ViajeHistorialResumenDto(reserva.getIdViaje(), "Viaje no disponible", "N/A", null);
+                            ? new ViajeHistorialResumenDto(viaje.getIdViaje(), viaje.getTitulo(), viaje.getDificultad(), viaje.getFechaHoraIda(), viaje.getImagenUrl())
+                            : new ViajeHistorialResumenDto(reserva.getIdViaje(), "Viaje no disponible", "N/A", null, null);
 
                     java.math.BigDecimal montoReserva = (viaje != null && viaje.getMontoReserva() != null)
                             ? viaje.getMontoReserva()
