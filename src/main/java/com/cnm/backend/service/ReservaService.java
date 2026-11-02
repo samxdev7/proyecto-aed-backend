@@ -96,7 +96,15 @@ public class ReservaService {
                     "El viaje seleccionado se encuentra archivado y no acepta nuevas reservas.");
         }
 
-        if (viaje.getFechaHoraIda().isBefore(ZonedDateTime.now())) {
+        ZonedDateTime ahora = ZonedDateTime.now();
+        ZonedDateTime limiteInscripcion = viaje.getFechaHoraIda().minusDays(7);
+
+        if (!ahora.isBefore(limiteInscripcion)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Las inscripciones para este viaje han expirado. Las inscripciones cierran automáticamente una semana antes de la fecha de salida.");
+        }
+
+        if (viaje.getFechaHoraIda().isBefore(ahora)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se pueden realizar reservas para viajes que ya han iniciado o finalizado.");
         }
