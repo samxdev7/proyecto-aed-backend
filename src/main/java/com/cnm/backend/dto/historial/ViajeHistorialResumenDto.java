@@ -10,5 +10,10 @@ public record ViajeHistorialResumenDto(
     Long idViaje,
     String titulo,
     String dificultad,
-    ZonedDateTime fechaHoraIda
-) {}
+    ZonedDateTime fechaHoraIda,
+    String imagenUrl
+) {
+    public ViajeHistorialResumenDto(Long idViaje, String titulo, String dificultad, ZonedDateTime fechaHoraIda) {
+        this(idViaje, titulo, dificultad, fechaHoraIda, null);
+    }
+}
